@@ -1,4 +1,4 @@
-<?php
+<?php 
 // This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Plugin version and other meta-data are defined here.
+ * Privileges and capabilities for the local_listusers plugin.
  *
  * @package     local_questionconverter
  * @copyright   2026 Renzo Medina <medinast30@gmail.com>
@@ -23,8 +23,13 @@
  */
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'local_questionconverter';
-$plugin->release = '0.1.0';
-$plugin->version = 2026011001;
-$plugin->requires = 2022112800;
-$plugin->maturity = MATURITY_ALPHA;
+$capabilities = [
+    'local/questionconverter:view' => [
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+            'manager' => CAP_ALLOW,
+        ],
+        'clonepermissionsfrom' => 'moodle/my:manageblocks'
+    ],
+];

@@ -26,3 +26,4 @@
 defined('MOODLE_INTERNAL') || die();
 
 $string['pluginname'] = 'Moodle Question Converter';
+$string['message']= 'Easily convert your PDF documents with questions to the Moodle platform quickly and easily.';

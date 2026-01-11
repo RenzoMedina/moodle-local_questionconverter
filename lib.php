@@ -14,17 +14,20 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
-/**
- * Plugin version and other meta-data are defined here.
+/** Insert a link to index.php on the site front page navigation menu.
+ *
+ * @param navigation_node $frontpage Node representing the front page in the navigation tree.
  *
  * @package     local_questionconverter
  * @copyright   2026 Renzo Medina <medinast30@gmail.com>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-defined('MOODLE_INTERNAL') || die();
-
-$plugin->component = 'local_questionconverter';
-$plugin->release = '0.1.0';
-$plugin->version = 2026011001;
-$plugin->requires = 2022112800;
-$plugin->maturity = MATURITY_ALPHA;
+function local_questionconverter_extend_navigation_frontpage(navigation_node $frontpage) {
+    if(has_capability('local/questionconverter:view', context_system::instance())){
+        $frontpage->add(
+            get_string('pluginname', 'local_questionconverter'),
+            new moodle_url('/local/questionconverter/index.php'),
+            navigation_node::TYPE_CUSTOM,
+        );
+    }
+}
