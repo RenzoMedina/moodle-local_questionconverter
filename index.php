@@ -30,6 +30,7 @@ $PAGE->set_pagelayout('standard');
 $PAGE->set_title(get_string('pluginname', 'local_questionconverter'));
 $PAGE->set_heading(get_string('pluginname', 'local_questionconverter'));
 $PAGE->requires->css(new moodle_url('/local/questionconverter/tailwindcss/dist/output.css'));
+$PAGE->requires->js(new moodle_url('/local/questionconverter/js/uploader.js'));
 echo $OUTPUT->header();
 
 $templatedata = [
