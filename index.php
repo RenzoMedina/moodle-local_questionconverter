@@ -29,10 +29,12 @@ $PAGE->set_url(new moodle_url('/local/questionconverter/index.php'));
 $PAGE->set_pagelayout('standard');
 $PAGE->set_title(get_string('pluginname', 'local_questionconverter'));
 $PAGE->set_heading(get_string('pluginname', 'local_questionconverter'));
+$PAGE->requires->css(new moodle_url('/local/questionconverter/tailwindcss/dist/output.css'));
 echo $OUTPUT->header();
 
 $templatedata = [
     'message' => get_string('message', 'local_questionconverter'),
+    'footer' => get_string('stringfooter', 'local_questionconverter'),
     ];
 
 echo $OUTPUT->render_from_template('local_questionconverter/main', $templatedata);

@@ -26,4 +26,5 @@
 defined('MOODLE_INTERNAL') || die();
 
 $string['pluginname'] = 'Convertidor de preguntas de Moodle';
-$string['message']= 'Convierta fácilmente sus documentos PDF de preguntas a plataforma Moodle directa de manera rápida y sencilla .';
+$string['message']= 'Convierta fácilmente sus documentos PDF de preguntas a plataforma Moodle directa de manera rápida y sencilla.';
+$string['stringfooter'] = 'DRA - Gestión de aula';
