@@ -19,10 +19,9 @@
  *
  * @package     local_questionconverter
  * @category    upgrade
- * @copyright   2025 Renzo Medina <medinast30@gmail.com>
+ * @copyright   2026 Renzo Medina <medinast30@gmail.com>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 /**
  * Custom code to be run on installing the plugin.
  */

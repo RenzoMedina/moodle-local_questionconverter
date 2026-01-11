@@ -18,10 +18,9 @@
  * Plugin version and other meta-data are defined here.
  *
  * @package     local_questionconverter
- * @copyright   2025 Renzo Medina <medinast30@gmail.com>
+ * @copyright   2026 Renzo Medina <medinast30@gmail.com>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'local_questionconverter';

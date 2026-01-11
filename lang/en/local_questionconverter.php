@@ -19,7 +19,7 @@
  *
  * @package     local_questionconverter
  * @category    string
- * @copyright   2025 Renzo Medina <medinast30@gmail.com>
+ * @copyright   2026 Renzo Medina <medinast30@gmail.com>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

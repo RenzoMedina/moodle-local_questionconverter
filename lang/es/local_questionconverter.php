@@ -15,22 +15,14 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Main file to view questionconverter plugin.
+ * Plugin strings are defined here.
  *
  * @package     local_questionconverter
+ * @category    string
  * @copyright   2026 Renzo Medina <medinast30@gmail.com>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-require_once(__DIR__ . '/../../config.php');
 
-$context = context_system::instance();
-$PAGE->set_context($context);
-$PAGE->set_url(new moodle_url('/local/questionconverter/index.php'));
-$PAGE->set_pagelayout('standard');
-$PAGE->set_title(get_string('pluginname', 'local_questionconverter'));
-$PAGE->set_heading(get_string('pluginname', 'local_questionconverter'));
+defined('MOODLE_INTERNAL') || die();
 
-$templatedata = ['userconverter'=>'Renzo Medina'];
-echo $OUTPUT->header();
-echo $OUTPUT->render_from_template('local_questionconverter/main', $templatedata);
-echo $OUTPUT->footer();
+$string['pluginname'] = 'Convertidor de preguntas de Moodle';

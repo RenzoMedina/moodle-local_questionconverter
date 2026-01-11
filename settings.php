@@ -19,15 +19,13 @@
  *
  * @package     local_questionconverter
  * @category    admin
- * @copyright   2025 Renzo Medina <medinast30@gmail.com>
+ * @copyright   2026 Renzo Medina <medinast30@gmail.com>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 defined('MOODLE_INTERNAL') || die();
 
 if ($hassiteconfig) {
     $settings = new admin_settingpage('local_questionconverter_settings', new lang_string('pluginname', 'local_questionconverter'));
-
     // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedIf
     if ($ADMIN->fulltree) {
         // TO-DO: Define actual plugin settings page and add it to the tree - {@link https://docs.moodle.org/dev/Admin_settings}.
