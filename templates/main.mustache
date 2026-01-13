@@ -23,8 +23,11 @@
     <div class="max-w-4xl mx-auto">
         <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
             <div class="p-8">
-                    <form action="#" method="post" enctype="multipart/form-data" id="formulario">
+                    <form action="{{form_action}}" method="post" enctype="multipart/form-data" id="formulario">
                     
+                    <input type="hidden" name="sesskey" value="{{sesskey}}">
+                    <input type="hidden" name="courseid" value="{{courseid}}">
+
                     <label class="relative inline-flex items-center cursor-pointer">
                     <input type="checkbox" value="true" class="sr-only peer" name="indicador">
                     <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-100  rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
@@ -109,6 +112,31 @@
             </p>
           </div>
     </div>
+
+        <!-- Loader -->
+        <div id="loader" class="hidden fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex items-center justify-center backdrop-blur-sm">
+            <div class="bg-white rounded-2xl p-8 shadow-2xl flex flex-col items-center gap-6 max-w-sm mx-4">
+                <!-- Spinner-->
+                <div class="relative">
+                    <div class="animate-spin rounded-full h-20 w-20 border-4 border-gray-200 border-t-primary"></div>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <svg class="w-10 h-10 text-primary" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"/>
+                        </svg>
+                    </div>
+                </div>
+                
+                <div class="text-center">
+                    <p class="text-gray-900 font-bold text-lg mb-2">Procesando tu PDF...</p>
+                    <p class="text-gray-600 text-sm">Esto puede tomar unos segundos</p>
+                </div>
+                
+                <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                    <div class="bg-primary h-full rounded-full animate-pulse" style="width: 70%;"></div>
+                </div>
+                
+            </div>
+        </div>
 
     <div class="max-w-4xl mx-auto mt-12 h-16 text-center">
         <p class="text-2xl font-bold">{{footer}}</p>

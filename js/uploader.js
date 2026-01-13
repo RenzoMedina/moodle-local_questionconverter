@@ -120,21 +120,27 @@
         }
     });
 
-document.getElementById('document-file').addEventListener('change', function() {
-    const fileName = this.files[0] ? this.files[0].name : 'Ningún archivo seleccionado'
-    document.querySelector('.file-button').textContent = fileName
-})
+    document.getElementById('document-file').addEventListener('change', function() {
+        const fileName = this.files[0] ? this.files[0].name : 'Ningún archivo seleccionado'
+        document.querySelector('.file-button').textContent = fileName
+    })
 
-setTimeout(() => {
-    window.history.replaceState({}, document.title, window.location.pathname)
-}, 7000);
+    setTimeout(() => {
+        window.history.replaceState({}, document.title, window.location.pathname)
+    }, 7000);
+
+    const loader = document.getElementById("loader")
+    document.getElementById('formulario').addEventListener('submit', function(e) {
+        loader.classList.remove('hidden')
+        loader.classList.add('flex')
+    });
     
 }
 
-    // Inicializar cuando el DOM esté listo
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initUploader);
-    } else {
-        initUploader();
-    }
+// Inicializar cuando el DOM esté listo
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initUploader);
+} else {
+    initUploader();
+}
 })();

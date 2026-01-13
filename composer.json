@@ -1,0 +1,20 @@
+{
+    "name": "local/questionconverter",
+    "description": "Moodle plugin to convert PDF files to question bank",
+    "type": "project",
+    "license": "GPL-3.0-or-later",
+    "require": {
+        "php": ">=8.3",
+        "smalot/pdfparser": "^2.0"
+    },
+    "config": {
+        "vendor-dir": "vendor",
+        "optimize-autoloader": true,
+        "preferred-install": "dist"
+    },
+    "autoload": {
+        "psr-4": {
+            "local_questionconverter\\":"classes/"
+        }
+    }
+}

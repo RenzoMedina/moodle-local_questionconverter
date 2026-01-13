@@ -23,11 +23,26 @@
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 function local_questionconverter_extend_navigation_frontpage(navigation_node $frontpage) {
-    if(has_capability('local/questionconverter:view', context_system::instance())){
+    if (has_capability('local/questionconverter:view', context_system::instance())) {
         $frontpage->add(
             get_string('pluginname', 'local_questionconverter'),
             new moodle_url('/local/questionconverter/index.php'),
             navigation_node::TYPE_CUSTOM,
         );
     }
+}
+
+function local_questionconverter_extend_navigation_course($navigation, $coursenode, $context) {
+    if (has_capability('local/questionconverter:use', $context)) {
+        return;
+    }
+    $url = new moodle_url('/local/questionconverter/index.php', ['courseid' => $coursenode->id]);
+    $node = navigation_node::create(
+        get_string('pluginname', 'local_questionconverter'),
+        $url,
+        navigation_node::TYPE_CUSTOM,
+        null,
+        'local_questionconverter',
+    );
+    $navigation->add_node($node);
 }
