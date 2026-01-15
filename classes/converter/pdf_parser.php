@@ -43,34 +43,26 @@ class pdf_parser {
      * @param string $filepath Ruta del archivo PDF
      * @return array Array de preguntas
      */
-
     public function parse_standard($filepath) {
         // Validaciones y manejo de errores del archivo
         if (!file_exists($filepath) || filesize($filepath) === 0) {
-            debugging('PDF file not found or empty: ' . $filepath, DEBUG_DEVELOPER);
             throw new \moodle_exception('invalidpdffile', 'local_questionconverter');
         }
 
         try {
             $pdf = $this->parser->parseFile($filepath);
             $text = $pdf->getText();
-            // DEBUG: log basic info about parsed text to diagnose problematic PDFs
-            $textlen = is_string($text) ? strlen($text) : 0;
-            debugging('parse_standard: parsed text length = ' . $textlen . ' for file: ' . $filepath, DEBUG_DEVELOPER);
-            debugging('parse_standard: text snippet: ' . substr($text, 0, 500), DEBUG_DEVELOPER);
-
+            
             $keywords = ['N° de pregunta', 'Alternativas', 'Respuesta correcta', 'Indicador'];
             foreach ($keywords as $kw) {
                 $count = is_string($text) ? substr_count($text, $kw) : 0;
-                debugging('parse_standard: keyword "' . $kw . '" occurrences: ' . $count, DEBUG_DEVELOPER);
+            
             }
         } catch (\Throwable $e) {
-            debugging('PDF parser error in parse_standard: ' . $e->getMessage(), DEBUG_DEVELOPER);
             throw new \moodle_exception('errorparsingpdf', 'local_questionconverter', '', null, $e->getMessage());
         }
 
         if (empty(trim($text))) {
-            debugging('Parsed PDF text is empty: ' . $filepath, DEBUG_DEVELOPER);
             throw new \moodle_exception('noquestionsfound', 'local_questionconverter');
         }
 
@@ -81,9 +73,9 @@ class pdf_parser {
         }
         return $questions;
     }
+    
     public function parse_with_indicators($filepath) {
         if (!file_exists($filepath) || filesize($filepath) === 0) {
-            debugging('PDF file not found or empty: ' . $filepath, DEBUG_DEVELOPER);
             return ['success' => false, 'indicators' => []];
         }
 
@@ -91,15 +83,12 @@ class pdf_parser {
             $pdf = $this->parser->parseFile($filepath);
             $text = $pdf->getText();
         } catch (\Throwable $e) {
-            debugging('PDF parser error in parse_with_indicators: ' . $e->getMessage(), DEBUG_DEVELOPER);
             return ['success' => false, 'indicators' => []];
         }
 
         if (empty(trim($text))) {
-            debugging('Parsed PDF text is empty for indicators: ' . $filepath, DEBUG_DEVELOPER);
             return ['success' => false, 'indicators' => []];
         }
-
         // Extraer indicadores
         $indicators = $this->extract_indicators($text);
         
@@ -133,31 +122,30 @@ class pdf_parser {
             'indicators' => $result
         ];
     }
+    
     private function parse_new_format($text) {
-        $pattern = '/N° de pregunta:\s*(\d+)\s*(.*?)\nAlternativas\s*'
-                . 'a\)\s*(.*?)\n'
-                . 'b\)\s*(.*?)\n'
-                . 'c\)\s*(.*?)\n'
-                . 'd\)\s*(.*?)\n'
-                . 'e\)\s*(.*?)\n'
-                .'.*?Respuesta correcta\s*([aA-eE])\s*'
-                .'Retroalimentación:\s*(.*?)(?=N° de pregunta:|$)/s';
         
+        $pattern = '/N°\s*de\s*pregunta:\s*(\d+)\s+'     
+                . '(.*?)'                                  
+                . '\s*Alternativas\s*'                    
+                . '[aA]\s*[)\.]\s*(.*?)\s*'              
+                . '[bB]\s*[)\.]\s*(.*?)\s*'               
+                . '[cC]\s*[)\.]\s*(.*?)\s*'               
+                . '[dD]\s*[)\.]\s*(.*?)\s*'              
+                . '[eE]\s*[)\.]\s*(.*?)\s*'               
+                . 'Respuesta\s*correcta\s*[:\s]*([a-eA-E])\s*' 
+                . '(?:Retroalimentación\s*[:\s]*(.*?))?'        
+                . '(?=N°\s*de\s*pregunta:|$)/is';              
+
         preg_match_all($pattern, $text, $matches, PREG_SET_ORDER);
 
-        $countmatches = count($matches);
-        debugging('parse_new_format: found ' . $countmatches . ' matches', DEBUG_DEVELOPER);
-        if ($countmatches > 0) {
-            debugging('parse_new_format: first match number=' . $matches[0][1] . ' question snippet=' . substr($matches[0][2], 0, 200), DEBUG_DEVELOPER);
-        }
-        
         $questions = [];
         foreach ($matches as $m) {
-            $feedback = $this->clean_feedback($m[9]);
+            $feedback = isset($m[9]) ? $this->clean_feedback($m[9]) : '';
             
             $questions[] = [
                 'type' => 'multichoice',
-                'number' => $m[1],
+                'number' => trim($m[1]),
                 'question' => trim($m[2]),
                 'options' => [
                     'a' => trim($m[3]),
@@ -173,33 +161,32 @@ class pdf_parser {
         
         return $questions;
     }
+    
     private function parse_old_format($text) {
         $text = preg_replace("/\r\n|\r/", "\n", $text);
-        $text = preg_replace('/.*?plazos establecidos\.\s*/s', '', $text);
+        $text = preg_replace('/.*?plazos\s+establecidos\.\s*/is', '', $text);
         $text = preg_replace('/^(?:[A-ZÁÉÍÓÚÜÑ0-9\s\.\-]+?\n){1,3}/', '', $text);
         
-        $pattern = '/^\s*(\d+)\.\s*'
-                . '(.*?) '
-                . '\s+'
-                . 'a\)\s*(.*?)\n'
-                . 'b\)\s*(.*?)\n'
-                . 'c\)\s*(.*?)\n'
-                . 'd\)\s*(.*?)\n'
-                . 'e\)\s*(.*?)\n'
-                . '.*?Respuesta\s*correcta\s*'
-                . 'Retroalimentación\s*'
-                . '([aA-eE])'
-                . '\s*'
-                . '((?:(?!\n\s*\d+\.\s).)*)'
-                . '/smx';
+        $pattern = '/^\s*(\d+)\s*[\.)\s]\s*'           
+                . '(.*?)'                             
+                . '\s+[aA]\s*[)\.]\s*(.*?)\s*'       
+                . '[bB]\s*[)\.]\s*(.*?)\s*'           
+                . '[cC]\s*[)\.]\s*(.*?)\s*'           
+                . '[dD]\s*[)\.]\s*(.*?)\s*'           
+                . '[eE]\s*[)\.]\s*(.*?)\s*'           
+                . 'Respuesta\s*correcta\s*'           
+                . '(?:Retroalimentación\s*)?'          
+                . '([a-eA-E])\s*'                      
+                . '(.*?)'                              
+                . '(?=^\s*\d+\s*[\.)\s]|$)/ismx';     
         
         preg_match_all($pattern, $text, $matches, PREG_SET_ORDER);
-        
+              
         $questions = [];
         foreach ($matches as $m) {
             $questions[] = [
                 'type' => 'multichoice',
-                'number' => $m[1],
+                'number' => trim($m[1]),
                 'question' => trim($m[2]),
                 'options' => [
                     'a' => trim($m[3]),
@@ -215,17 +202,16 @@ class pdf_parser {
         
         return $questions;
     }
+    
     private function extract_indicators($text) {
-        preg_match_all('/Indicador\s+(\d+):\s*([^\n]*)/s', $text, $matches, PREG_OFFSET_CAPTURE);
+        preg_match_all('/Indicador\s+(\d+)\s*[:\s]*(.*?)(?=\n|$)/is', $text, $matches, PREG_OFFSET_CAPTURE);
         
         $indicatorcount = isset($matches[0]) ? count($matches[0]) : 0;
-        debugging('extract_indicators: found ' . $indicatorcount . ' indicator entries', DEBUG_DEVELOPER);
         if ($indicatorcount > 0) {
             $list = [];
             for ($i = 0; $i < min(10, $indicatorcount); $i++) {
                 $list[] = trim($matches[1][$i][0]) . ':' . trim($matches[2][$i][0]);
             }
-            debugging('extract_indicators: sample indicators: ' . implode(', ', $list), DEBUG_DEVELOPER);
         }
         
         $indicators = [];
@@ -251,10 +237,11 @@ class pdf_parser {
         
         return $indicators;
     }
+    
     private function process_indicator($indicator) {
         $content = $indicator['content'];
         
-        preg_match_all('/N° de pregunta:\s*(\d+)/s', $content, $matches, PREG_OFFSET_CAPTURE);
+        preg_match_all('/N°\s*de\s*pregunta:\s*(\d+)/is', $content, $matches, PREG_OFFSET_CAPTURE);
         
         $questions = [];
         
@@ -271,8 +258,7 @@ class pdf_parser {
             $block = substr($content, $start, $end - $start);
             $block = trim($block);
             
-            // Detectar si tiene opciones múltiples
-            $has_options = preg_match('/Alternativas\s+a\)\s+.*?\s+b\)\s+.*?\s+c\)\s+.*?\s+d\)\s+.*?\s+e\)/s', $block);
+             $has_options = preg_match('/Alternativas|a\s*[)\.]\s*.*?\s*b\s*[)\.]\s*.*?\s*c\s*[)\.]/is', $block);
             
             if ($has_options) {
                 $question = $this->process_multichoice($block);
@@ -287,24 +273,25 @@ class pdf_parser {
         
         return $questions;
     }
+    
     private function process_multichoice($block) {
-        $pattern = '/N° de pregunta:\s*(\d+)\s+'
-                . '(.*?)'
-                . '\s*Alternativas\s+'
-                . 'a\)\s+(.*?)\s+'
-                . 'b\)\s+(.*?)\s+'
-                . 'c\)\s+(.*?)\s+'
-                . 'd\)\s+(.*?)\s+'
-                . 'e\)\s+(.*?)\s+'
-                . 'Respuesta correcta\s+([a-eA-E])'
-                . '(.*?)$'
-                . '/s';
+        $pattern = '/N°\s*de\s*pregunta:\s*(\d+)\s+'
+                . '(.*?)'                                          
+                . '\s*Alternativas\s*'                             
+                . '[aA]\s*[)\.]\s+(.*?)(?=\s*[bB]\s*[)\.])'       
+                . '\s*[bB]\s*[)\.]\s+(.*?)(?=\s*[cC]\s*[)\.])'    
+                . '\s*[cC]\s*[)\.]\s+(.*?)(?=\s*[dD]\s*[)\.])'    
+                . '\s*[dD]\s*[)\.]\s+(.*?)(?=\s*[eE]\s*[)\.])'    
+                . '\s*[eE]\s*[)\.]\s+(.*?)(?=Respuesta)'           
+                . '\s*Respuesta\s*correcta\s*[:\s]*([a-eA-E])'     
+                . '(.*?)$'                                          
+                . '/is';
         
         if (preg_match($pattern, $block, $m)) {
-            $rest = $m[9];
+            $rest = isset($m[9]) ? $m[9] : '';
             $feedback = '';
             
-            if (preg_match('/Retroalimentación:\s*(.*?)$/s', $rest, $feedback_match)) {
+            if (preg_match('/Retroalimentación\s*[:\s]*(.*?)$/is', $rest, $feedback_match)) {
                 $feedback = trim($feedback_match[1]);
             }
             
@@ -312,7 +299,7 @@ class pdf_parser {
             
             return [
                 'type' => 'multichoice',
-                'number' => $m[1],
+                'number' => trim($m[1]),
                 'question' => trim($m[2]),
                 'options' => [
                     'a' => trim($m[3]),
@@ -328,12 +315,13 @@ class pdf_parser {
         
         return null;
     }
+    
     private function process_essay($block) {
-        $pattern = '/N° de pregunta:\s*(\d+)\s+'
+        $pattern = '/N°\s*de\s*pregunta:\s*(\d+)\s+'
             . '(.*?)'
-            . '\s*Escribe aquí tu respuesta\s*'
-            . '(?:Retroalimentación:\s*(.*?))?$'
-            . '(?=\s*$)/s';
+            . '\s*Escribe\s+aquí\s+tu\s+respuesta\s*'
+            . '(?:Retroalimentación\s*[:\s]*(.*?))?$'
+            . '/is';
         
         if (preg_match($pattern, $block, $m)) {
             $feedback = isset($m[3]) ? trim($m[3]) : '';
@@ -341,7 +329,7 @@ class pdf_parser {
             
             return [
                 'type' => 'essay',
-                'number' => $m[1],
+                'number' => trim($m[1]),
                 'question' => trim($m[2]),
                 'feedback' => $feedback
             ];
@@ -349,6 +337,7 @@ class pdf_parser {
         
         return null;
     }
+    
     private function clean_feedback($feedback) {
         if (empty($feedback)) {
             return '';
@@ -357,7 +346,7 @@ class pdf_parser {
         $text = trim($feedback);
         
         // Limpiar hasta "semana."
-        if (preg_match('/(.*?semana\.)/s', $text, $match)) {
+        if (preg_match('/(.*?semana\.)/is', $text, $match)) {
             return trim(preg_replace('/\s+/', ' ', $match[1]));
         }
         

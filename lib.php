@@ -22,7 +22,11 @@
  * @copyright   2026 Renzo Medina <medinast30@gmail.com>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-function local_questionconverter_extend_navigation_frontpage(navigation_node $frontpage) {
+
+/**
+ * Add link to Question Converter on front page navigation if user has capability.
+ */
+/* function local_questionconverter_extend_navigation_frontpage(navigation_node $frontpage) {
     if (has_capability('local/questionconverter:view', context_system::instance())) {
         $frontpage->add(
             get_string('pluginname', 'local_questionconverter'),
@@ -30,8 +34,15 @@ function local_questionconverter_extend_navigation_frontpage(navigation_node $fr
             navigation_node::TYPE_CUSTOM,
         );
     }
-}
+} */
 
+/**
+ * Summary of local_questionconverter_extend_navigation_course
+ * @param mixed $navigation
+ * @param mixed $coursenode
+ * @param mixed $context
+ * @return void
+ */
 function local_questionconverter_extend_navigation_course($navigation, $coursenode, $context) {
     if (!has_capability('local/questionconverter:use', $context)) {
         return;

@@ -71,14 +71,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && confirm_sesskey()) {
         if (isset($_FILES['pdffile']) && $_FILES['pdffile']['error'] === UPLOAD_ERR_OK) {
             $file = $_FILES['pdffile'];
         } else {
-            debugging('Upload check failed. $_FILES: ' . print_r($_FILES, true), DEBUG_DEVELOPER);
             $errcode = $_FILES['pdffile']['error'] ?? null;
-            debugging('Upload error code: ' . var_export($errcode, true), DEBUG_DEVELOPER);
-            debugging('php.ini upload_max_filesize=' . ini_get('upload_max_filesize') . ' post_max_size=' . ini_get('post_max_size') . ' upload_tmp_dir=' . ini_get('upload_tmp_dir'), DEBUG_DEVELOPER);
 
             // Intentar obtener archivo desde draft area (filepicker)
             $draftid = file_get_submitted_draft_itemid('pdffile');
-            debugging('Draft id for pdffile: ' . var_export($draftid, true), DEBUG_DEVELOPER);
 
             if (!empty($draftid)) {
                 $fs = get_file_storage();
@@ -98,7 +94,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && confirm_sesskey()) {
                         $filename = $f->get_filename();
                         $filepath = $tempdir . '/' . $filename;
                         file_put_contents($filepath, $f->get_content());
-                        debugging('Saved draft file to temp: ' . $filepath, DEBUG_DEVELOPER);
                         $file = [
                             'tmp_name' => $filepath,
                             'name' => $filename,
@@ -109,9 +104,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && confirm_sesskey()) {
                         $isdraft = true;
                         break;
                     }
-                } else {
-                    debugging('No files found in draft area for id: ' . $draftid, DEBUG_DEVELOPER);
-                }
+                } 
             }
 
             if (!$file) {
@@ -127,7 +120,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && confirm_sesskey()) {
         finfo_close($finfo);
 
         if ($mimetype !== 'application/pdf') {
-            debugging('Uploaded file mime detected: ' . var_export($mimetype, true), DEBUG_DEVELOPER);
             throw new moodle_exception('invalidpdffile', 'local_questionconverter');
         }
 
@@ -145,7 +137,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && confirm_sesskey()) {
 
             // Comprobar que el fichero temporal existe y fue subido vía HTTP POST
             if (!is_uploaded_file($file['tmp_name']) || !file_exists($file['tmp_name'])) {
-                debugging('Uploaded file missing or not uploaded via HTTP POST: ' . $file['tmp_name'], DEBUG_DEVELOPER);
                 throw new moodle_exception('erroruploadfile', 'local_questionconverter');
             }
 
@@ -154,7 +145,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && confirm_sesskey()) {
                 // Fallback: copy
                 if (!@copy($file['tmp_name'], $filepath)) {
                     $err = error_get_last();
-                    debugging('Failed to move or copy uploaded file. Error: ' . ($err['message'] ?? 'unknown'), DEBUG_DEVELOPER);
                     throw new moodle_exception('erroruploadfile', 'local_questionconverter');
                 } else {
                     // Borrar el temporal original si copy tuvo éxito
