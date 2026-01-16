@@ -152,8 +152,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && confirm_sesskey()) {
                 }
             }
         }
-
-        // En este punto $filepath debe apuntar al archivo en disco listo para parsear
         
         // Obtener si tiene indicadores
         $with_indicators = optional_param('with_indicators', 0, PARAM_INT);

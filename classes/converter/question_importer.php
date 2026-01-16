@@ -40,8 +40,6 @@ class question_importer {
      */
     public function __construct($context) {
         $this->context = $context;
-        // No dependemos de question_category_object (no disponible en todas las versiones),
-        // usamos directamente la API de BD para crear/obtener categorías en get_or_create_category().
     }
     
     /**
@@ -172,6 +170,7 @@ class question_importer {
         $multichoice->questionid = $question->id;
         $multichoice->single = 1;
         $multichoice->shuffleanswers = 0;
+        $multichoice->answernumbering = 'abc';
         $multichoice->correctfeedback = '';
         $multichoice->correctfeedbackformat = FORMAT_HTML;
         $multichoice->partiallycorrectfeedback = '';
@@ -184,39 +183,25 @@ class question_importer {
         
         $DB->insert_record('qtype_multichoice_options', $multichoice);
         
-        // Insertar respuestas
         $fraction_map = [
             'a' => 0, 'b' => 0, 'c' => 0, 'd' => 0, 'e' => 0
         ];
         $fraction_map[$data['correct_answer']] = 1;
-        
-        $order = 1;
+    
         foreach (['a', 'b', 'c', 'd', 'e'] as $letter) {
             $answer = new \stdClass();
             $answer->question = $question->id;
-            $answer->answer = $data['options'][$letter];
+            $answer->answer = '<p>' . $data['options'][$letter] . '</p>';
             $answer->answerformat = FORMAT_HTML;
             $answer->fraction = $fraction_map[$letter];
+            $answer->feedback = ($letter === $data['correct_answer']) ? ($data['feedback'] ?? '') : '';
+            $answer->feedbackformat = FORMAT_HTML; 
+            $answer->maxmark = 1;
             
-            // Feedback solo para la respuesta correcta
-            if ($letter === $data['correct_answer']) {
-                $answer->feedback = $data['feedback'] ?? '';
-            } else {
-                $answer->feedback = '';
-            }
-            $answer->feedbackformat = FORMAT_HTML;
+            $DB->insert_record('question_answers', $answer);
             
-            $answer->id = $DB->insert_record('question_answers', $answer);
-            
-            // Vincular respuesta con multichoice
-            $DB->insert_record('qtype_multichoice_answers', [
-                'questionid' => $question->id,
-                'answerid' => $answer->id,
-                'sortorder' => $order++
-            ]);
         }
         
-        // Crear entrada en question_bank_entries
         $this->create_question_bank_entry($question);
         
         return $question->id;
@@ -271,7 +256,6 @@ class question_importer {
         
         $DB->insert_record('qtype_essay_options', $essay);
         
-        // Crear entrada en question_bank_entries
         $this->create_question_bank_entry($question);
         
         return $question->id;
@@ -289,8 +273,9 @@ class question_importer {
         $dbman = $DB->get_manager();
         $table = new \xmldb_table('question_bank_entries');
         
+        // Tabla no existe en versiones antiguas
         if (!$dbman->table_exists($table)) {
-            return; // Tabla no existe en versiones antiguas
+            return; 
         }
         
         // Crear entrada en question_bank_entries
