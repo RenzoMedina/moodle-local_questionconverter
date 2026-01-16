@@ -242,6 +242,7 @@ $templatedata = [
     'form_action' => (new moodle_url('/local/questionconverter/index.php'))->out(false),
     'sesskey' => sesskey(),
     'courseid' => $courseid,
+    'year'=> date('Y'),
     'message' => get_string('message', 'local_questionconverter'),
     'footer' => get_string('stringfooter', 'local_questionconverter'),
     'name-return' => get_string('name-return', 'local_questionconverter'),
