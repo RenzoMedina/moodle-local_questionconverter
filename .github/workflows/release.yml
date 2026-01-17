@@ -2,10 +2,10 @@ name: Deploy Release
 
 on:
   push:
-    branches:
-      - main
     tags:
       - 'v*.*.*'
+    branches:
+      - main
   workflow_dispatch:
 
 env:
@@ -23,7 +23,7 @@ jobs:
         id: version
         run: |
           if [[ "${{ github.ref_type }}" == "tag" ]]; then
-            VERSION=${GITHUB_REF#refs/tags/v}
+            VERSION=$(echo "${{ github.ref }}" | sed 's|refs/tags/v||')
           else
             VERSION=$(date +%Y%m%d-%H%M%S)
           fi
@@ -44,17 +44,37 @@ jobs:
       - name: Create ZIP for Moodle
         run: |
           echo "Creando ZIP para: ${{ env.PLUGIN_NAME }}"
-          mkdir -p /tmp/build
-          cp -r . /tmp/build/${{ env.PLUGIN_NAME }}
+          mkdir -p /tmp/build/${{ env.PLUGIN_NAME }}
+          cp -r ./* /tmp/build/${{ env.PLUGIN_NAME }}/ 2>/dev/null || true
+          ls -la /tmp/build/${{ env.PLUGIN_NAME }}/
           cd /tmp/build
           zip -r ${{ env.PLUGIN_NAME }}.zip ${{ env.PLUGIN_NAME }}
+          mv ${{ env.PLUGIN_NAME }}.zip ${GITHUB_WORKSPACE}/
+          cd ${GITHUB_WORKSPACE}
+          echo "ZIP creado correctamente"
+          ls -lh ${{ env.PLUGIN_NAME }}.zip
+          unzip -l ${{ env.PLUGIN_NAME }}.zip | head -20
 
-      - name: Create Release
+      - name: Crear Release en GitHub
         if: github.ref_type == 'tag'
         uses: softprops/action-gh-release@v1
         with:
-          files: "*.zip"
+          files: "${{ env.PLUGIN_NAME }}.zip"
           generate_release_notes: true
+          body: |
+          ## 📦 Plugin para Moodle: ${{ env.PLUGIN_NAME }}
+            
+            **Versión:** ${{ steps.version.outputs.version }}
+            
+            ### Instalación
+            1. Descarga el archivo `${{ env.PLUGIN_NAME }}.zip`
+            2. En Moodle: **Administración del sitio** → **Plugins** → **Instalar plugins**
+            3. Sube el archivo ZIP
+            4. Sigue el asistente de instalación
+            
+            ### Requisitos
+            - Moodle 4.1+
+            - PHP 8.1+
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         
