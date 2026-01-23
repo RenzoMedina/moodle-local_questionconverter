@@ -118,6 +118,7 @@ class pdf_parser {
         ];
     } 
     private function parse_new_format($text) {
+        $text = $this->clean_full_text($text);
         $pattern = '/N°\s*de\s+pregunta:\s*(\d+)\s*(.*?)\s*Retroalimentación:\s*(.*?)(?=N°\s*de\s+pregunta:|$)/s';
         preg_match_all($pattern, $text, $matches, PREG_SET_ORDER);
         
@@ -398,9 +399,10 @@ class pdf_parser {
     }
 
     private function clean_question($content) {
-        $cleaned = preg_replace('/\s*Alternativas\s*.*$/is', '', $content);
-        $cleaned = preg_replace('/\s*Escribe\s+aquí\s+tu\s+respuesta.*$/is', '', $cleaned);
-        $cleaned = preg_replace('/\s*Verdadero\s+o\s+falso.*$/is', '', $cleaned);
+        $cleaned = preg_replace('/\n+/', ' ', $content);
+        $cleaned = preg_replace('/\s+Alternativas\s+[a-e]\).*$/is', '', $content);
+        $cleaned = preg_replace('/\s+Escribe\s+aquí\s+tu\s+respuesta.*$/is', '', $cleaned);
+        $cleaned = preg_replace('/\s+Verdadero\s+o\s+falso\s+[a-b]\).*$/is', '', $cleaned);
         $cleaned = preg_replace('/\s+/', ' ', $cleaned);
         
         return trim($cleaned);
@@ -509,5 +511,29 @@ class pdf_parser {
         } else {
             return '';
         }
+    }
+    
+    private function clean_full_text($content){
+        $question = preg_split('/(N°\s*de\s*pregunta:\s*\d+)/i', $content, -1, PREG_SPLIT_DELIM_CAPTURE);
+        $clean_text = '';
+        for ($i = 1; $i < count($question); $i+=2) {
+            if (isset($question[$i]) && isset($question[$i + 1])) {
+                $number_question = $question[$i];
+                $content_questions = $question[$i + 1];
+            }
+
+            $content_questions = $this->clean_question_block($content_questions);
+
+            $clean_text.=$number_question.$content_questions."\n\n";
+
+        }
+        return trim($clean_text);
+    }
+    private function clean_question_block($block){
+        if(preg_match('/(.*?Retroalimentación:.*?)(?=\n\s*\d+\s+[A-Z]|$)/s', $block, $matches)){
+        return trim($matches[1]);
+    }
+    
+    return trim($block);
     }
 }
