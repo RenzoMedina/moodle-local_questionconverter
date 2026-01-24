@@ -35,11 +35,19 @@ $context = context_course::instance($courseid);
 require_login($course);
 require_capability('moodle/question:add', $context);
 
+$PAGE->set_url(new moodle_url('/local/questionconverter/success.php', 
+            [ 
+                'courseid' => $courseid, 
+                'total' => $total, 
+                'categories' => $categories, 
+                'categoryid' => $categoryid 
+            ]));
+
 $PAGE->set_context($context);
-$PAGE->set_course($course);
 $PAGE->set_pagelayout('incourse');
 $PAGE->set_title(get_string('pluginname', 'local_questionconverter'));
 $PAGE->set_heading($course->fullname);
+$PAGE->set_course($course);
 $PAGE->requires->css(new moodle_url('/local/questionconverter/tailwindcss/dist/output.css'));
 
 // URL para ir al banco de preguntas

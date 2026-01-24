@@ -215,72 +215,12 @@ class pdf_parser {
             $block = substr($content, $start, $end - $start);
             $block = trim($block);
             $question = $this->process_question_from_block($block);
-            //$has_options = preg_match('/Alternativas|a\s*[)\.]\s*.*?\s*b\s*[)\.]\s*.*?\s*c\s*[)\.]/is', $block);
- /*            if ($has_options) {
-                $question = $this->process_multichoice($block);
-            } else {
-                $question = $this->process_essay($block);
-            } */
             if ($question) {
                 $questions[] = $question;
             }
         } 
         return $questions;
     }  
-/*     private function process_multichoice($block) {
-        $pattern = '/N° de pregunta:\s*(\d+)\s+'
-                        . '(.*?)'  
-                        . '\s*Alternativas\s+'
-                        . 'a\)\s+(.*?)\s+'  
-                        . 'b\)\s+(.*?)\s+'  
-                        . 'c\)\s+(.*?)\s+' 
-                        . 'd\)\s+(.*?)\s+'
-                        . 'e\)\s+(.*?)\s+'
-                        . 'Respuesta correcta\s+([a-eA-E])'  
-                        . '(.*?)$'
-                        . '/s';
-        if (preg_match($pattern, $block, $m)) {
-            $rest = isset($m[9]) ? $m[9] : '';
-            $feedback = '';
-            if (preg_match('/Retroalimentación\s*[:\s]*(.*?)$/is', $rest, $feedback_match)) {
-                $feedback = trim($feedback_match[1]);
-            }
-            $feedback = $this->clean_feedback($feedback);
-            return [
-                'type' => 'multichoice',
-                'number' => trim($m[1]),
-                'question' => trim($m[2]),
-                'options' => [
-                    'a' => trim($m[3]),
-                    'b' => trim($m[4]),
-                    'c' => trim($m[5]),
-                    'd' => trim($m[6]),
-                    'e' => trim($m[7]),
-                ],
-                'correct_answer' => strtolower(trim($m[8])),
-                'feedback' => $feedback
-            ];
-        }  
-        return null;
-    }  
-    private function process_essay($block) {
-        $pattern = '/N° de pregunta:\s*(\d+)\s+'
-            . '(.*?)'
-            . '\s*Escribe aquí tu respuesta\s*'
-            . '(?:Retroalimentación:\s*(.*?))?$'
-            . '(?=\s*$)/s';
-        if (preg_match($pattern, $block, $m)) {
-            $feedback = isset($m[3]) ? trim($m[3]) : '';
-            $feedback = $this->clean_feedback($feedback);
-            return [
-                'type' => 'essay',
-                'number' => trim($m[1]),
-                'question' => trim($m[2]),
-                'feedback' => $feedback,
-            ];
-        }
-        return null;
-    }  */
     
     private function category_question($content){
         list($alternative_tf, $type_ft) = $this->extract_options_truefalse($content);
@@ -299,7 +239,7 @@ class pdf_parser {
         return '';
     }
     private function process_question_from_block($block){
-        $pattern = '/N°\s*de\s*pregunta:\s*(\d+)\s+(.*?)(?:\s*Retroalimentación:\s*(.*?))?$/s';
+        $pattern = '/N°\s*de\s+pregunta:\s*(\d+)\s*(.*?)\s*Retroalimentación:\s*(.*?)(?=N°\s*de\s+pregunta:\s*\d+|\z)/s';
         if (!preg_match($pattern, $block, $m)) {
             return null;
         }
@@ -368,11 +308,12 @@ class pdf_parser {
     private function extract_options_truefalse($content) {
         $type = '';
         $options = [];
-        $pattern = '/Verdadero\s+o\s+falso\s*(.*?)(?=Respuesta\s+correcta|$)/is';
+        $pattern = '/(verdadero\s*o\s*falso|v\s*\/\s*f|v\s*o\s*f)\s*(.*?)(?=respuesta\s+correcta|$)/isu';
         
         if (!preg_match($pattern, $content, $match)) {
             return [$options, $type];
         }
+        $type = 'truefalse';
         $options_text = $match[1];
         $pattern_options = '/([a-b])\)\s*([^\n]+)/';
         preg_match_all($pattern_options, $options_text, $matches, PREG_SET_ORDER);
@@ -382,7 +323,7 @@ class pdf_parser {
 
             if (stripos($text, 'Verdadero o falso') === false) {
                 $options[$letter]= $text;
-                $type = 'truefalse';
+                
             }
         }
         return [$options, $type];
@@ -450,7 +391,7 @@ class pdf_parser {
 
     private function proccess_question($content,$matches = null){
         if ($matches === null){
-            $pattern = '/N°\s*de\s+pregunta:\s*(\d+)\s*(.*?)\s*Retroalimentación:\s*(.*?)$/s';
+            $pattern = '/N°\s*de\s+pregunta:\s*(\d+)\s*(.*?)\s*Retroalimentación:\s*(.*?)(?=N°\s*de\s+pregunta:\s*\d+|\z)/s';
             if(!preg_match($pattern, $content, $matches)) {
                 return null;
             }

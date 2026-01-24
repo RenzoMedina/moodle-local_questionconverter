@@ -168,7 +168,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && confirm_sesskey()) {
             }
             
             /* Importar cada indicador como categoría separada */
-            $importer = new question_importer($context);
+            $importer = new question_importer($courseid);
             $imported_data = [];
             
             foreach ($result['indicators'] as $indicator) {
@@ -202,7 +202,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && confirm_sesskey()) {
             $category_name = clean_param($filename, PARAM_TEXT);
             $category_name = preg_replace('/\.pdf$/i', '', $category_name);
             
-            $importer = new question_importer($context);
+            $importer = new question_importer($courseid);
             $imported = $importer->import_questions($questions, $category_name, $courseid);
             
             $total_questions = $imported['count'];
