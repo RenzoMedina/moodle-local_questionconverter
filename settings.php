@@ -24,11 +24,15 @@
  */
 defined('MOODLE_INTERNAL') || die();
 
-if ($hassiteconfig) {
-    $settings = new admin_settingpage('local_questionconverter_settings', new lang_string('pluginname', 'local_questionconverter'));
-    // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedIf
+if (is_siteadmin()) {
+    $settings = new admin_settingpage(
+        'local_questionconverter_settings', 
+        new lang_string('pluginname', 'local_questionconverter')
+    );
+    
     if ($ADMIN->fulltree) {
-        // TO-DO: Define actual plugin settings page and add it to the tree - {@link https://docs.moodle.org/dev/Admin_settings}.
+        // Configuraciones del plugin aquí
     }
+    
     $ADMIN->add('localplugins', $settings);
 }
