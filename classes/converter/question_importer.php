@@ -1,4 +1,4 @@
-<?php 
+<?php
 // This file is part of Moodle - https://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -21,6 +21,7 @@
  * @copyright   2026 Renzo Medina <medinast30@gmail.com>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 namespace local_questionconverter\converter;
 defined('MOODLE_INTERNAL') || die();
 
@@ -28,52 +29,49 @@ require_once($CFG->dirroot . '/question/format.php');
 require_once($CFG->dirroot . '/question/editlib.php');
 require_once($CFG->dirroot . '/question/format/xml/format.php');
 
+/**
+ * Summary of question_importer
+ */
 class question_importer {
-    
     /** @var \context El contexto del curso */
     private $context;
-    
     /**
      * Constructor
-     * 
      * @param \context $context Contexto del curso
      */
     public function __construct($courseid) {
         $this->context = \context_course::instance($courseid);
     }
-    
     /**
      * Importar preguntas directamente al banco de preguntas
-     * 
      * @param array $questions Array de preguntas parseadas
      * @param string $category_name Nombre de la categoría
      * @param int $courseid ID del curso
      * @return array Información de la importación
      */
-    public function import_questions($questions, $category_name, $courseid) {
+    public function import_questions($questions, $categoryname, $courseid) {
         global $DB;
-        
-        // Crear o buscar la categoría
-        $category = $this->get_or_create_category($category_name, $courseid);
-        $imported_count = 0;
+        // Crear o buscar la categoría.
+        $category = $this->get_or_create_category($categoryname, $courseid);
+        $importedcount = 0;
         foreach ($questions as $q) {
-            if (empty($q['question']) || empty($q['type'])) { 
-                continue; 
+            if (empty($q['question']) || empty($q['type'])) {
+                continue;
             }
             $type = strtolower(trim($q['type']));
             try {
                 switch($type) {
                     case 'multichoice':
                         $this->import_multichoice($q, $category->id);
-                        $imported_count++;
+                        $importedcount++;
                         break;
                     case 'essay':
                         $this->import_essay($q, $category->id);
-                        $imported_count++;
+                        $importedcount++;
                         break;
                     case 'truefalse':
                         $this->import_truefalse($q, $category->id);
-                        $imported_count++;
+                        $importedcount++;
                         break;
                     default:
                         debugging("Tipo de pregunta no reconocido: {$q['type']}", DEBUG_DEVELOPER);
@@ -86,13 +84,11 @@ class question_importer {
         return [
             'categoryid' => $category->id,
             'category' => $category->name,
-            'count' => $imported_count
+            'count' => $importedcount,
         ];
     }
-    
     /**
      * Obtener o crear una categoría
-     * 
      * @param string $name Nombre de la categoría
      * @param int $courseid ID del curso
      * @return object Categoría
@@ -100,75 +96,68 @@ class question_importer {
     private function get_or_create_category($name, $courseid) {
         global $DB;
         $context = \context_course::instance($courseid);
-        // Buscar categoría existente
+        // Buscar categoría existente.
         $category = $DB->get_record('question_categories', [
             'name' => $name,
             'contextid' => $context->id,
         ]);
-        
         if ($category) {
             return $category;
         }
-        
-        // Obtener la categoría top para este contexto
-        $top_category = $DB->get_record('question_categories', [
+        // Obtener la categoría top para este contexto.
+        $topcategory = $DB->get_record('question_categories', [
             'contextid' => $context->id,
-            'parent' => 0
+            'parent' => 0,
         ]);
-        
-        if (!$top_category) {
-            // Crear categoría top si no existe
-            $top_category = new \stdClass();
-            $top_category->name = 'top';
-            $top_category->contextid = $context->id;
-            $top_category->info = 'Top category';
-            $top_category->infoformat = FORMAT_HTML;
-            $top_category->stamp = make_unique_id_code();
-            $top_category->parent = 0;
-            $top_category->sortorder = 999;
-            $top_category->id = $DB->insert_record('question_categories', $top_category);
+        if (!$topcategory) {
+            // Crear categoría top si no existe.
+            $topcategory = new \stdClass();
+            $topcategory->name = 'top';
+            $topcategory->contextid = $context->id;
+            $topcategory->info = 'Top category';
+            $topcategory->infoformat = FORMAT_HTML;
+            $topcategory->stamp = make_unique_id_code();
+            $topcategory->parent = 0;
+            $topcategory->sortorder = 999;
+            $topcategory->id = $DB->insert_record('question_categories', $topcategory);
         }
-        
-        // Crear nueva categoría
+        // Crear nueva categoría.
         $category = new \stdClass();
         $category->name = $name;
         $category->contextid = $context->id;
         $category->info = 'Categoría importada desde PDF - Plugin';
         $category->infoformat = FORMAT_HTML;
         $category->stamp = make_unique_id_code();
-        $category->parent = $top_category->id;
+        $category->parent = $topcategory->id;
         $category->sortorder = 999;
-        
         $category->id = $DB->insert_record('question_categories', $category);
-        
         return $category;
     }
-    
+    /**
+     * Summary of update_category_question_count
+     * @param mixed $categoryid
+     * @return void
+     */
     private function update_category_question_count($categoryid) {
         global $DB;
-        
-        // Actualizar el campo 'questioncount' en la categoría (si existe en tu versión de Moodle)
+        // Actualizar el campo 'questioncount' en la categoría (si existe en tu versión de Moodle).
         if ($DB->get_manager()->field_exists('question_categories', 'questioncount')) {
             $count = $DB->count_records('question', ['category' => $categoryid]);
             $DB->set_field('question_categories', 'questioncount', $count, ['id' => $categoryid]);
         }
-        
-        // Limpiar caché de preguntas
+        // Limpiar caché de preguntas.
         \cache::make('core', 'questiondata')->purge();
         \question_bank::notify_question_edited($categoryid);
     }
-
     /**
      * Importar pregunta de opción múltiple
-     * 
      * @param array $data Datos de la pregunta
      * @param int $categoryid ID de la categoría
      * @return int ID de la pregunta creada
      */
     private function import_multichoice($data, $categoryid) {
         global $DB, $USER;
-        
-        // Crear pregunta base
+        // Crear pregunta base.
         $question = new \stdClass();
         $question->category = $categoryid;
         $question->name = 'P' . $data['number'];
@@ -187,13 +176,10 @@ class question_importer {
         $question->timemodified = time();
         $question->createdby = $USER->id;
         $question->modifiedby = $USER->id;
-        
         $question->id = $DB->insert_record('question', $question);
-
-        // Crear entrada en el banco de preguntas (Moodle 4.0+)
+        // Crear entrada en el banco de preguntas (Moodle 4.0+).
         $this->create_question_bank_entry($question);
-        
-        // Opciones de multichoice
+        // Opciones de multichoice.
         $multichoice = new \stdClass();
         $multichoice->questionid = $question->id;
         $multichoice->single = 1;
@@ -208,19 +194,14 @@ class question_importer {
         $multichoice->answernumbering = 'abc';
         $multichoice->shownumcorrect = 0;
         $multichoice->showstandardinstruction = 0;
-        
         $DB->insert_record('qtype_multichoice_options', $multichoice);
-        
-        $fraction_map = [
-            'a' => 0, 'b' => 0, 'c' => 0, 'd' => 0, 'e' => 0
+        $fractionmap = [
+            'a' => 0, 'b' => 0, 'c' => 0, 'd' => 0, 'e' => 0,
         ];
-
-        if (isset($data['correct_answer']) && isset($fraction_map[$data['correct_answer']])) {
-            $fraction_map[$data['correct_answer']] = 1;
+        if (isset($data['correctanswer']) && isset($fractionmap[$data['correctanswer']])) {
+            $fractionmap[$data['correctanswer']] = 1;
         }
-    
         foreach (['a', 'b', 'c', 'd', 'e'] as $letter) {
-
             if (!isset($data['options'][$letter])) {
                 continue;
             }
@@ -228,22 +209,22 @@ class question_importer {
             $answer->question = $question->id;
             $answer->answer = '<p>' . $data['options'][$letter] . '</p>';
             $answer->answerformat = FORMAT_HTML;
-            $answer->fraction = $fraction_map[$letter];
-            $answer->feedback = ($letter === $data['correct_answer']) ? ($data['feedback'] ?? '') : '';
-            $answer->feedbackformat = FORMAT_HTML; 
+            $answer->fraction = $fractionmap[$letter];
+            $answer->feedback = ($letter === $data['correctanswer']) ? ($data['feedback'] ?? '') : '';
+            $answer->feedbackformat = FORMAT_HTML;
             $answer->maxmark = 1;
-            
             $DB->insert_record('question_answers', $answer);
-            
         }
-        
         return $question->id;
     }
-    
+    /**
+     * Summary of import_truefalse
+     * @param mixed $data
+     * @param mixed $categoryid
+     */
     private function import_truefalse($data, $categoryid) {
         global $DB, $USER;
-
-        // Crear pregunta base
+        // Crear pregunta base.
         $question = new \stdClass();
         $question->category = $categoryid;
         $question->parent = 0;
@@ -263,73 +244,77 @@ class question_importer {
         $question->timemodified = time();
         $question->createdby = $USER->id;
         $question->modifiedby = $USER->id;
-        
         $question->id = $DB->insert_record('question', $question);
-
-        // Crear entrada en el banco de preguntas (Moodle 4.0+)
+        // Crear entrada en el banco de preguntas (Moodle 4.0+).
         $this->create_question_bank_entry($question);
-        
-        // Determinar respuesta correcta
-        $correct_answer = isset($data['correct_answer']) ? strtolower(trim($data['correct_answer'])) : '';
-        $correct_answer = trim($correct_answer, ". \t\n\r\0\x0B");
-        $is_true = false;
-        
-        if (in_array($correct_answer, ['verdadero', 'true', 'v', 'a', '1', 'verdadero.', 'true.', 'verdadero', 'verdadero '], true)) {
-            $is_true = true;
-        }elseif (in_array($correct_answer, ['falso', 'false', 'f', 'b', '0', 'falso.', 'false.', 'falso', 'falso '], true)) {
-            $is_true = false;
-        }else {
-            $is_true = false;
+        // Determinar respuesta correcta.
+        $correctanswer = isset($data['correctanswer']) ? strtolower(trim($data['correctanswer'])) : '';
+        $correctanswer = trim($correctanswer, ". \t\n\r\0\x0B");
+        $istrue = false;
+        if (in_array($correctanswer, [
+            'verdadero',
+            'true',
+            'v',
+            'a',
+            '1',
+            'verdadero.',
+            'true.',
+            'verdadero',
+            'verdadero ',
+            ], true)) {
+            $istrue = true;
+        } else if (in_array($correctanswer, [
+            'falso',
+            'false',
+            'f',
+            'b',
+            '0',
+            'falso.',
+            'false.',
+            'falso',
+            'falso ',
+            ], true)) {
+            $istrue = false;
+        } else {
+            $istrue = false;
         }
-        
-        $feedback_correcto = $data['feedback'] ?? '';
-
-        // Crear respuesta "Verdadero"
-        $answer_true = new \stdClass();
-        $answer_true->question = $question->id;
-        $answer_true->answer = get_string('true', 'qtype_truefalse');
-        $answer_true->answerformat = FORMAT_HTML;
-        $answer_true->fraction = $is_true ? 1 : 0;
-        $answer_true->feedback = $is_true ? $feedback_correcto : '';
-        $answer_true->feedbackformat = FORMAT_HTML;
-        
-        $trueid = $DB->insert_record('question_answers', $answer_true);
-
-        // Crear respuesta "Falso"
-        $answer_false = new \stdClass();
-        $answer_false->question = $question->id;
-        $answer_false->answer = get_string('false', 'qtype_truefalse');
-        $answer_false->answerformat = FORMAT_HTML;
-        $answer_false->fraction = $is_true ? 0 : 1;
-        $answer_false->feedback = !$is_true ? $feedback_correcto : '';
-        $answer_false->feedbackformat = FORMAT_HTML;
-        
-        $falseid = $DB->insert_record('question_answers', $answer_false);
-        
-        // Opciones de truefalse
+        $feedbackcorrecto = $data['feedback'] ?? '';
+        // Crear respuesta "Verdadero".
+        $answertrue = new \stdClass();
+        $answertrue->question = $question->id;
+        $answertrue->answer = get_string('true', 'qtype_truefalse');
+        $answertrue->answerformat = FORMAT_HTML;
+        $answertrue->fraction = $istrue ? 1 : 0;
+        $answertrue->feedback = $istrue ? $feedbackcorrecto : '';
+        $answertrue->feedbackformat = FORMAT_HTML;
+        $trueid = $DB->insert_record('question_answers', $answertrue);
+        // Crear respuesta "Falso".
+        $answerfalse = new \stdClass();
+        $answerfalse->question = $question->id;
+        $answerfalse->answer = get_string('false', 'qtype_truefalse');
+        $answerfalse->answerformat = FORMAT_HTML;
+        $answerfalse->fraction = $istrue ? 0 : 1;
+        $answerfalse->feedback = !$istrue ? $feedbackcorrecto : '';
+        $answerfalse->feedbackformat = FORMAT_HTML;
+        $falseid = $DB->insert_record('question_answers', $answerfalse);
+        // Opciones de truefalse.
         $truefalse = new \stdClass();
         $truefalse->question = $question->id;
         $truefalse->trueanswer = $trueid;
         $truefalse->falseanswer = $falseid;
         $truefalse->showstandardinstruction = 1;
-        
         $DB->insert_record('question_truefalse', $truefalse);
-    
         return $question->id;
-
     }
-
     /**
      * Importar pregunta de ensayo
-     * 
      * @param array $data Datos de la pregunta
      * @param int $categoryid ID de la categoría
      * @return int ID de la pregunta creada
      */
     private function import_essay($data, $categoryid) {
         global $DB, $USER;
-        
-        // Crear pregunta base
+        // Crear pregunta base.
         $question = new \stdClass();
         $question->category = $categoryid;
         $question->name = 'P' . $data['number'];
@@ -348,13 +333,10 @@ class question_importer {
         $question->timemodified = time();
         $question->createdby = $USER->id;
         $question->modifiedby = $USER->id;
-        
         $question->id = $DB->insert_record('question', $question);
-
-        // Crear entrada en el banco de preguntas (Moodle 4.0+)
+        // Crear entrada en el banco de preguntas (Moodle 4.0+).
         $this->create_question_bank_entry($question);
-
-        // Opciones de essay
+        // Opciones de essay.
         $essay = new \stdClass();
         $essay->questionid = $question->id;
         $essay->responseformat = 'editor';
@@ -368,37 +350,28 @@ class question_importer {
         $essay->graderinfoformat = FORMAT_HTML;
         $essay->responsetemplate = '';
         $essay->responsetemplateformat = FORMAT_HTML;
-        
         $DB->insert_record('qtype_essay_options', $essay);
-    
-        
         return $question->id;
     }
-    
     /**
      * Crear entrada en el banco de preguntas (Moodle 4.0+)
-     * 
      * @param object $question Pregunta
      */
     private function create_question_bank_entry($question) {
         global $DB, $USER;
-        
-        // Verificar si la tabla existe (Moodle 4.0+)
+        // Verificar si la tabla existe (Moodle 4.0+).
         $dbman = $DB->get_manager();
         $table = new \xmldb_table('question_bank_entries');
-        
-        // Tabla no existe en versiones antiguas
+        // Tabla no existe en versiones antiguas.
         if (!$dbman->table_exists($table)) {
-            return; 
+            return;
         }
-
-         // Verificar si ya existe una entrada para esta pregunta
+         // Verificar si ya existe una entrada para esta pregunta.
         $existing = $DB->get_record('question_versions', ['questionid' => $question->id]);
         if ($existing) {
-            return true; // Ya existe
+            return true;
         }
-        
-        // Crear entrada en question_bank_entries
+        // Crear entrada en question_bank_entries.
         $entry = new \stdClass();
         $entry->questioncategoryid = $question->category;
         $entry->idnumber = null;
@@ -406,20 +379,16 @@ class question_importer {
         $entry->status = \core_question\local\bank\question_version_status::QUESTION_STATUS_READY;
         $entry->timecreated = time();
         $entry->timemodified = time();
-        $entry->questionusageid = null; 
-        
+        $entry->questionusageid = null;
         $entry->id = $DB->insert_record('question_bank_entries', $entry);
-        
-        // Crear versión en question_versions
+        // Crear versión en question_versions.
         $version = new \stdClass();
         $version->questionbankentryid = $entry->id;
         $version->version = 1;
         $version->questionid = $question->id;
         $version->status = \core_question\local\bank\question_version_status::QUESTION_STATUS_READY;
         $version->timecreated = time();
-        
         $DB->insert_record('question_versions', $version);
-
         $entry->versionid = $version->id;
         $DB->update_record('question_bank_entries', $entry);
     }

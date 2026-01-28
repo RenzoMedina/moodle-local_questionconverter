@@ -36,7 +36,7 @@ $capabilities = [
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
         'archetypes' => [
-            'manager' => CAP_ALLOW
-        ]
+            'manager' => CAP_ALLOW,
+        ],
     ],
 ];

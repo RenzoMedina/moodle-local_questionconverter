@@ -21,6 +21,7 @@
  * @copyright   2026 Renzo Medina <medinast30@gmail.com>
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 require_once(__DIR__ . '/../../config.php');
 require_once($CFG->libdir. '/questionlib.php');
 
@@ -35,10 +36,10 @@ use local_questionconverter\converter\pdf_parser;
 use local_questionconverter\converter\question_importer;
 
 
-$courseid = optional_param('courseid',0, PARAM_INT);
+$courseid = optional_param('courseid', 0, PARAM_INT);
 if (empty($courseid)) {
     $referer = $_SERVER['HTTP_REFERER'] ?? '';
-    if (preg_match('/[?&]id=(\d+)/', $referer,$matches)) {
+    if (preg_match('/[?&]id=(\d+)/', $referer, $matches)) {
         $courseid = (int)$matches[1];
     } else {
         redirect(new moodle_url('/my/'));
@@ -52,37 +53,34 @@ require_login($course);
 require_capability('moodle/question:add', $context);
 
 $PAGE->set_context($context);
-$PAGE->set_url(new moodle_url('/local/questionconverter/index.php',['courseid'=>$courseid]));
+$PAGE->set_url(new moodle_url('/local/questionconverter/index.php', [
+    'courseid' => $courseid,
+]));
 $PAGE->set_pagelayout('incourse');
 $PAGE->set_title(get_string('pluginname', 'local_questionconverter'));
 $PAGE->set_heading(get_string('pluginname', 'local_questionconverter'));
 $PAGE->requires->css(new moodle_url('/local/questionconverter/tailwindcss/dist/output.css'));
 $PAGE->requires->js(new moodle_url('/local/questionconverter/js/uploader.js'));
 
-// Procesar el formulario si se ha enviado
+// Procesar el formulario si se ha enviado.
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && confirm_sesskey()) {
-    
     try {
-        // Verificar que se subió un archivo (soporta upload directo y filepicker draft)
+        // Verificar que se subió un archivo (soporta upload directo y filepicker draft).
         $file = null;
         $filepath = null;
         $isdraft = false;
-
         if (isset($_FILES['pdffile']) && $_FILES['pdffile']['error'] === UPLOAD_ERR_OK) {
             $file = $_FILES['pdffile'];
         } else {
             $errcode = $_FILES['pdffile']['error'] ?? null;
-
-            // Intentar obtener archivo desde draft area (filepicker)
+            // Intentar obtener archivo desde draft area (filepicker).
             $draftid = file_get_submitted_draft_itemid('pdffile');
-
             if (!empty($draftid)) {
                 $fs = get_file_storage();
                 $usercontext = context_user::instance($USER->id);
                 $files = $fs->get_area_files($usercontext->id, 'user', 'draft', $draftid, 'id', false);
-
                 if (!empty($files)) {
-                    // Tomar el primer archivo real (no directorio)
+                    // Tomar el primer archivo real (no directorio).
                     foreach ($files as $f) {
                         if ($f->is_directory()) {
                             continue;
@@ -99,50 +97,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && confirm_sesskey()) {
                             'name' => $filename,
                             'type' => $f->get_mimetype(),
                             'size' => $f->get_filesize(),
-                            'error' => UPLOAD_ERR_OK
+                            'error' => UPLOAD_ERR_OK,
                         ];
                         $isdraft = true;
                         break;
                     }
-                } 
+                }
             }
-
             if (!$file) {
-                // Si no hay archivo, lanzar la excepción de siempre
+                // Si no hay archivo, lanzar la excepción de siempre.
                 throw new moodle_exception('erroruploadfile', 'local_questionconverter');
             }
         }
 
-        // Si llegamos aquí tenemos $file (o creado desde draft)
-        // Validar que sea PDF
+        // Si llegamos aquí tenemos $file (o creado desde draft).
+        // Validar que sea PDF.
         $finfo = finfo_open(FILEINFO_MIME_TYPE);
         $mimetype = finfo_file($finfo, $file['tmp_name']);
         finfo_close($finfo);
-
         if ($mimetype !== 'application/pdf') {
             throw new moodle_exception('invalidpdffile', 'local_questionconverter');
         }
 
-        // Si no es draft, mover archivo a directorio temporal (si ya creamos el archivo desde draft, ya está en temp)
+        // Si no es draft, mover archivo a directorio temporal (si ya creamos el archivo desde draft, ya está en temp).
         if (!$isdraft) {
             $filename = clean_filename($file['name']);
             $tempdir = make_temp_directory('questionconverter');
 
-            // Asegurar que el directorio temporal exista
+            // Asegurar que el directorio temporal exista.
             if (!is_dir($tempdir)) {
                 @mkdir($tempdir, 0777, true);
             }
 
             $filepath = $tempdir . '/' . $filename;
 
-            // Comprobar que el fichero temporal existe y fue subido vía HTTP POST
+            // Comprobar que el fichero temporal existe y fue subido vía HTTP POST.
             if (!is_uploaded_file($file['tmp_name']) || !file_exists($file['tmp_name'])) {
                 throw new moodle_exception('erroruploadfile', 'local_questionconverter');
             }
 
-            // Intentar mover; si falla, intentar copiar como fallback
+            // Intentar mover; si falla, intentar copiar como fallback.
             if (!@move_uploaded_file($file['tmp_name'], $filepath)) {
-                // Fallback: copy
+                // Fallback: copy.
                 if (!@copy($file['tmp_name'], $filepath)) {
                     $err = error_get_last();
                     throw new moodle_exception('erroruploadfile', 'local_questionconverter');
@@ -152,82 +148,65 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && confirm_sesskey()) {
                 }
             }
         }
-        
         /* Obtener si tiene indicadores */
-        $with_indicators = optional_param('with_indicators', 0, PARAM_INT);
-        
+        $withindicators = optional_param('with_indicators', 0, PARAM_INT);
         /* Parsear el PDF */
         $parser = new pdf_parser();
-        
-        if ($with_indicators) {
+        if ($withindicators) {
             /* Formato con indicadores */
             $result = $parser->parse_with_indicators($filepath);
-            
             if (empty($result['indicators'])) {
                 throw new moodle_exception('noindicatorsfound', 'local_questionconverter');
             }
-            
             /* Importar cada indicador como categoría separada */
             $importer = new question_importer($courseid);
-            $imported_data = [];
-            
+            $importeddata = [];
             foreach ($result['indicators'] as $indicator) {
-                $name_file = clean_param($filename, PARAM_TEXT);
-                $name_file = preg_replace('/\.pdf$/i', '', $name_file);
-                $category_name =$name_file . '_Indicador_'.$indicator['number']; /* "Indicador {$indicator['number']}: {$indicator['title']}"; */
+                $namefile = clean_param($filename, PARAM_TEXT);
+                $namefile = preg_replace('/\.pdf$/i', '', $namefile);
+                $categoryname = $namefile . '_Indicador_'.$indicator['number'];
                 $imported = $importer->import_questions(
                     $indicator['questions'],
-                    $category_name,
-                    $courseid
+                    $categoryname,
+                    $courseid,
                 );
-                
-                $imported_data[] = [
-                    'category' => $category_name,
+                $importeddata[] = [
+                    'category' => $categoryname,
                     'categoryid' => $imported['categoryid'],
-                    'count' => $imported['count']
+                    'count' => $imported['count'],
                 ];
             }
-            
-            $total_questions = array_sum(array_column($imported_data, 'count'));
-            
+            $totalquestions = array_sum(array_column($importeddata, 'count'));
         } else {
             /* Formato sin indicadores */
             $questions = $parser->parse_standard($filepath);
-            
             if (empty($questions)) {
                 throw new moodle_exception('noquestionsfound', 'local_questionconverter');
             }
-            
             /* Importar a una sola categoría */
-            $category_name = clean_param($filename, PARAM_TEXT);
-            $category_name = preg_replace('/\.pdf$/i', '', $category_name);
-            
+            $categoryname = clean_param($filename, PARAM_TEXT);
+            $categoryname = preg_replace('/\.pdf$/i', '', $categoryname);
             $importer = new question_importer($courseid);
-            $imported = $importer->import_questions($questions, $category_name, $courseid);
-            
-            $total_questions = $imported['count'];
-            $imported_data = [[
-                'category' => $category_name,
+            $imported = $importer->import_questions($questions, $categoryname, $courseid);
+            $totalquestions = $imported['count'];
+            $importeddata = [[
+                'category' => $categoryname,
                 'categoryid' => $imported['categoryid'],
-                'count' => $imported['count']
+                'count' => $imported['count'],
             ]];
         }
-
         /* Limpiar archivo temporal */
         if (file_exists($filepath)) {
             unlink($filepath);
         }
-
         /* Redirigir a página de éxito */
-        $success_url = new moodle_url('/local/questionconverter/success.php', [
+        $successurl = new moodle_url('/local/questionconverter/success.php', [
             'courseid' => $courseid,
-            'total' => $total_questions,
-            'categories' => count($imported_data),
-            'categoryid' => $imported_data[0]['categoryid'],
+            'total' => $totalquestions,
+            'categories' => count($importeddata),
+            'categoryid' => $importeddata[0]['categoryid'],
         ]);
-        
-        redirect($success_url);
-        
+        redirect($successurl);
     } catch (Exception $e) {
         /* Limpiar archivo temporal en caso de error*/
         if (isset($filepath) && file_exists($filepath)) {
@@ -241,7 +220,7 @@ $templatedata = [
     'form_action' => (new moodle_url('/local/questionconverter/index.php'))->out(false),
     'sesskey' => sesskey(),
     'courseid' => $courseid,
-    'year'=> date('Y'),
+    'year' => date('Y'),
     'message' => get_string('message', 'local_questionconverter'),
     'footer' => get_string('stringfooter', 'local_questionconverter'),
     'name-return' => get_string('name-return', 'local_questionconverter'),
