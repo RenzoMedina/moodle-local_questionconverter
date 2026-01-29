@@ -43,7 +43,6 @@ if (empty($courseid)) {
         $courseid = (int)$matches[1];
     } else {
         redirect(new moodle_url('/my/'));
-        die();
     }
 }
 $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
