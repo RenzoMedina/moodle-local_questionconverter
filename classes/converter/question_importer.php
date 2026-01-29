@@ -112,9 +112,9 @@ class question_importer {
         if (!$topcategory) {
             // Crear categoría top si no existe.
             $topcategory = new \stdClass();
-            $topcategory->name = 'top';
+            $topcategory->name = get_string('topcategoryname', 'local_questionconverter');
             $topcategory->contextid = $context->id;
-            $topcategory->info = 'Top category';
+            $topcategory->info = get_string('topcategoryinfo', 'local_questionconverter');
             $topcategory->infoformat = FORMAT_HTML;
             $topcategory->stamp = make_unique_id_code();
             $topcategory->parent = 0;
@@ -125,7 +125,7 @@ class question_importer {
         $category = new \stdClass();
         $category->name = $name;
         $category->contextid = $context->id;
-        $category->info = 'Categoría importada desde PDF - Plugin';
+        $category->info = get_string('importedcategoryinfo', 'local_questionconverter');
         $category->infoformat = FORMAT_HTML;
         $category->stamp = make_unique_id_code();
         $category->parent = $topcategory->id;
@@ -160,12 +160,12 @@ class question_importer {
         // Crear pregunta base.
         $question = new \stdClass();
         $question->category = $categoryid;
-        $question->name = 'P' . $data['number'];
+        $question->name = get_string('questionnameprefix', 'local_questionconverter') . $data['number'];
         $question->questiontext = $data['question'];
         $question->questiontextformat = FORMAT_HTML;
         $question->generalfeedback = '';
         $question->generalfeedbackformat = FORMAT_HTML;
-        $question->defaultmark = 0.5;
+        $question->defaultmark = 1;
         $question->penalty = 0.3333333;
         $question->qtype = 'multichoice';
         $question->length = 1;
@@ -228,12 +228,12 @@ class question_importer {
         $question = new \stdClass();
         $question->category = $categoryid;
         $question->parent = 0;
-        $question->name = 'P' . $data['number'];
+        $question->name = get_string('questionnameprefix', 'local_questionconverter') . $data['number'];
         $question->questiontext = $data['question'];
         $question->questiontextformat = FORMAT_HTML;
         $question->generalfeedback = '';
         $question->generalfeedbackformat = FORMAT_HTML;
-        $question->defaultmark = 0.5;
+        $question->defaultmark = 1;
         $question->penalty = 1;
         $question->qtype = 'truefalse';
         $question->length = 1;
@@ -317,12 +317,12 @@ class question_importer {
         // Crear pregunta base.
         $question = new \stdClass();
         $question->category = $categoryid;
-        $question->name = 'P' . $data['number'];
+        $question->name = get_string('questionnameprefix', 'local_questionconverter') . $data['number'];
         $question->questiontext = $data['question'];
         $question->questiontextformat = FORMAT_HTML;
         $question->generalfeedback = $data['feedback'] ?? '';
         $question->generalfeedbackformat = FORMAT_HTML;
-        $question->defaultmark = 0.5;
+        $question->defaultmark = 1;
         $question->penalty = 0;
         $question->qtype = 'essay';
         $question->length = 1;

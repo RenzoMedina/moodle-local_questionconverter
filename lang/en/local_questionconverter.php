@@ -56,3 +56,7 @@ $string['text-loading-help'] = 'This may take a few seconds';
 $string['text-selectcategory'] = 'Drag and drop your PDF here';
 $string['text-selectcategory-help'] = 'or click to browse your files';
 $string['text-uploadpdf'] = 'Selected file:';
+$string['topcategoryname'] = 'top';
+$string['topcategoryinfo'] = 'Top category';
+$string['importedcategoryinfo'] = 'Category imported from PDF - Plugin';
+$string['questionnameprefix'] = 'P';
