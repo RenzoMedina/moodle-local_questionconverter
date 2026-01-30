@@ -40,11 +40,12 @@ jobs:
       - name: Create ZIP for Moodle
         run: |
           echo "Creando ZIP para: ${{ env.PLUGIN_NAME }}"
-          mkdir -p /tmp/build
-          cp -r ./* /tmp/build/ 2>/dev/null || true
-          ls -la /tmp/build/
+          PLUGIN_DIR="questionconverter"
+          mkdir -p /tmp/build/${PLUGIN_DIR}
+          cp -r ./* /tmp/build/${PLUGIN_DIR}/ 2>/dev/null || true
+          ls -la /tmp/build/${PLUGIN_DIR}/
           cd /tmp/build
-          zip -r ${{ env.PLUGIN_NAME }}.zip .
+          zip -r ${{ env.PLUGIN_NAME }}.zip ${PLUGIN_DIR}
           mv ${{ env.PLUGIN_NAME }}.zip ${GITHUB_WORKSPACE}/
           cd ${GITHUB_WORKSPACE}
           echo "ZIP creado correctamente"
