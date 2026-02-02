@@ -309,7 +309,7 @@ class pdf_parser {
             return [$options, $type];
         }
         $optionstext = trim($m[1]);
-        $patternoptions = '/([a-e])\)\s*([^\n]+)/i';
+        $patternoptions = '/([a-e])\)\s*(.*?)(?=\s*[a-e]\)|$)/s';
         preg_match_all($patternoptions, $optionstext, $matches, PREG_SET_ORDER);
         foreach ($matches as $opt) {
             $letter = strtolower($opt[1]);
