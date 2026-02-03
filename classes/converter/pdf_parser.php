@@ -31,21 +31,21 @@ use Smalot\PdfParser\Parser;
  * Summary of pdf_parser
  */
 class pdf_parser {
-    /** @var Parser Parser de PDF */
+    /** @var Parser Parser of PDF */
     private $parser;
     /**
-     * Constructor
+     * Construct
      */
     public function __construct() {
         $this->parser = new Parser();
     }
     /**
-     * Parsear PDF con formato estándar (sin indicadores)
-     * @param string $filepath Ruta del archivo PDF
-     * @return array Array de preguntas
+     * Parse standard format PDF (without indicators)
+     * @param string $filepath PDF file path
+     * @return array Array of questions
      */
     public function parse_standard($filepath) {
-        /* Comprobar si el archivo existe y no está vacío */
+        /* Check if the file exists and is not empty */
         if (!file_exists($filepath) || filesize($filepath) === 0) {
             throw new \moodle_exception('invalidpdffile', 'local_questionconverter');
         }
@@ -90,7 +90,7 @@ class pdf_parser {
                 'indicators' => [],
                 ];
         }
-        /* Extraer indicadores */
+        /* Extract indicators */
         $indicators = $this->extract_indicators($text);
         if (empty($indicators)) {
             return [
@@ -101,7 +101,7 @@ class pdf_parser {
         $result = [];
         foreach ($indicators as $num => $indicator) {
             $questions = $this->process_indicator($indicator);
-            /* Filtrar preguntas válidas */
+            /* Filter valid questions */
             $validquestions = array_filter ($questions, function($q) {
                 return isset($q['type']) &&
                        $q['type'] !== 'ERROR' &&
@@ -395,11 +395,11 @@ class pdf_parser {
             return '';
         }
         $text = trim($feedback);
-        // Limpiar hasta "semana.".
+        // Clean up until "week ".
         if (preg_match('/(.*?semana\.)/s', $text, $match)) {
             return trim(preg_replace('/\s+/', ' ', $match[1]));
         }
-        // Dividir por líneas y limpiar.
+        // Divide by lines and clean.
         $lines = explode("\n", $text);
         $validlines = [];
         foreach ($lines as $line) {

@@ -24,13 +24,13 @@
 
 require_once(__DIR__ . '/../../config.php');
 
-// Obtener parámetros.
+// Get parameters.
 $courseid = required_param('courseid', PARAM_INT);
 $total = required_param('total', PARAM_INT);
 $categories = optional_param('categories', 1, PARAM_INT);
 $categoryid = required_param('categoryid', PARAM_INT);
 
-// Verificar acceso.
+// Verify access.
 $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
 $context = context_course::instance($courseid);
 
@@ -51,7 +51,7 @@ $PAGE->set_heading($course->fullname);
 $PAGE->set_course($course);
 $PAGE->requires->css(new moodle_url('/local/questionconverter/tailwindcss/dist/output.css'));
 
-// URL para ir al banco de preguntas.
+// URL to go to the question bank.
 $questionbankurl = new moodle_url('/question/edit.php', [
     'courseid' => $courseid,
     'cat' => $categoryid . ',' . $context->id,
