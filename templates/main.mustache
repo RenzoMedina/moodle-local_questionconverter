@@ -19,7 +19,7 @@
 
     Example context (json):
     { 
-        "link-return": "http://example.com/course", 
+        "link_return": "http://example.com/course", 
         "name-return": "Back", 
         "message": "Convert your PDF into questions ready to import", 
         "form_action": "http://example.com/local/questionconverter/index.php", 
@@ -44,13 +44,13 @@
 }}
 
 <div class="flex gap-3 max-w-sm mb-4 float-right">
-   <a class="py-2.5 px-3 rounded-lg text-sm font-medium text-white bg-blue-600 link-clean hover:bg-blue-800 transition duration-300" href="{{link-return}}">{{name-return}}</a>
+   <a class="py-2.5 px-3 rounded-lg text-sm font-medium text-white bg-blue-600 link-clean hover:bg-blue-800 transition duration-300" href="{{link_return}}">{{#str}}name-return, local_questionconverter{{/str}}</a>
 </div>
 <div class="bg-white">    
 
     <div class="max-w-4xl mx-auto px-2 py-8">
         <div class="">
-            <p class="text-gray-600 mt-2 text-base">{{message}}</p>
+            <p class="text-gray-600 mt-2 text-base">{{#str}}message, local_questionconverter{{/str}}</p>
         </div>
     </div>
     <div class="max-w-4xl mx-auto">
@@ -64,7 +64,7 @@
                     <label class="relative inline-flex items-center cursor-pointer">
                     <input type="checkbox" value="1" class="sr-only peer" name="with_indicators">
                     <span class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-100  rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></span>
-                    <span class="ms-3 text-md font-medium text-gray-700">{{text-indicators}}</span>
+                    <span class="ms-3 text-md font-medium text-gray-700">{{#str}}text-indicators, local_questionconverter{{/str}}</span>
                     </label>
                     
                     <div id="qc-drop-zone" class="relative border-2 border-dashed border-gray-300 rounded-xl transition-all duration-200 p-8 md:p-12 text-center cursor-pointer hover:border-primary hover:bg-blue-50">
@@ -75,8 +75,8 @@
                             </svg>
                         </div>
                         <p class="text-xl font-semibold text-gray-900">
-                           {{text-selectcategory}} <br> 
-                            <span class="text-gray-600 font-normal">{{text-selectcategory-help}}</span>
+                           {{#str}}text-selectcategory, local_questionconverter{{/str}}<br> 
+                            <span class="text-gray-600 font-normal">{{#str}}text-selectcategory-help, local_questionconverter{{/str}}</span>
                         </p>
                     </div>
 
@@ -88,12 +88,12 @@
 
                         </div>
                         <div class="text-center">
-                            <p class="text-sm text-gray-600 mb-1">{{text-uploadpdf}}</p>
+                            <p class="text-sm text-gray-600 mb-1">{{#str}}text-uploadpdf, local_questionconverter{{/str}}</p>
                             <p id="file-name" class="text-lg font-semibold text-gray-900"></p>
                             <p id="file-size" class="text-sm text-gray-500 mt-1"></p>
                         </div>
                         <button type="button" id="qc-btn-change" class="mt-2 text-primary hover:text-blue-700 font-medium text-sm pointer-events-auto">
-                           {{text-change-file}}
+                           {{#str}}text-change-file, local_questionconverter{{/str}}
                         </button>
                     </div>
                     
@@ -106,14 +106,14 @@
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path fill-rule="evenodd" clip-rule="evenodd" d="M4 3C4.55228 3 5 3.44772 5 4V6.34298C6.64938 4.30446 9.17168 3 12 3C16.5903 3 20.3767 6.43564 20.9304 10.8763C20.9988 11.4243 20.6099 11.924 20.0618 11.9923C19.5138 12.0607 19.0141 11.6718 18.9458 11.1237C18.5153 7.67174 15.5689 5 12 5C9.62231 5 7.51998 6.18566 6.25442 8H9C9.55228 8 10 8.44772 10 9C10 9.55228 9.55228 10 9 10H4C3.44772 10 3 9.55228 3 9V4C3 3.44772 3.44772 3 4 3ZM3.93815 12.0077C4.48619 11.9393 4.98587 12.3282 5.05421 12.8763C5.48467 16.3283 8.43109 19 12 19C14.3777 19 16.48 17.8143 17.7456 16H15C14.4477 16 14 15.5523 14 15C14 14.4477 14.4477 14 15 14H20C20.5523 14 21 14.4477 21 15V20C21 20.5523 20.5523 21 20 21C19.4477 21 19 20.5523 19 20V17.657C17.3506 19.6955 14.8283 21 12 21C7.40967 21 3.62332 17.5644 3.06958 13.1237C3.00124 12.5757 3.39011 12.076 3.93815 12.0077Z" fill="white"/>
                         </svg>
-                            {{text-convert-and-import}}
+                            {{#str}}text-convert-and-import, local_questionconverter{{/str}}
                         </button>
             
                         <button type="button" id="qc-btn-reset" class="hidden inline-flex items-center gap-2 bg-white text-red-600 px-8 py-3 rounded-lg font-semibold border-2 border-red-600 transition-all duration-200 hover:bg-red-600 hover:text-red-400">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                             </svg>
-                             {{text-clear}}
+                             {{#str}}text-clear, local_questionconverter{{/str}}
                         </button>
                     </div>
                 </form>
@@ -128,9 +128,9 @@
                 <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
             </svg>
             </div>
-            <h3 class="font-semibold text-gray-900">{{text-grid-success}}</h3>
+            <h3 class="font-semibold text-gray-900">{{#str}}text-grid-success, local_questionconverter{{/str}}</h3>
             <p class="text-gray-600 text-sm mt-2">
-              {{text-grid-success-help}}
+              {{#str}}text-grid-success-help, local_questionconverter{{/str}}
             </p>
           </div>
           <div class="text-center">
@@ -139,9 +139,9 @@
                 <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
                 </svg>
             </div>
-            <h3 class="font-semibold text-gray-900">{{text-grid-info}}</h3>
+            <h3 class="font-semibold text-gray-900">{{#str}}text-grid-info, local_questionconverter{{/str}}</h3>
             <p class="text-gray-600 text-sm mt-2">
-             {{text-grid-info-help}}
+             {{#str}}text-grid-info-help, local_questionconverter{{/str}}
             </p>
           </div>
     </div>
@@ -160,8 +160,8 @@
                 </div>
                 
                 <div class="text-center">
-                    <p class="text-gray-900 font-bold text-lg mb-2">{{text-loading}}</p>
-                    <p class="text-gray-600 text-sm">{{text-loading-help}}</p>
+                    <p class="text-gray-900 font-bold text-lg mb-2">{{#str}}text-loading, local_questionconverter{{/str}}</p>
+                    <p class="text-gray-600 text-sm">{{#str}}text-loading-help, local_questionconverter{{/str}}{{}}</p>
                 </div>
                 
                 <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
@@ -172,6 +172,6 @@
         </div>
 
     <div class="max-w-4xl mx-auto mt-12 h-16 text-center">
-        <p class="text-sm text-gray-700 font-semibold">{{footer}} - {{year}}</p>
+        <p class="text-sm text-gray-700 font-semibold">{{#str}}stringfooter, local_questionconverter{{/str}} - {{year}}</p>
     </div>
 </div>

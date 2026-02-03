@@ -64,14 +64,7 @@ $templatedata = [
     'categories' => $categories,
     'questionbankurl' => $questionbankurl->out(false),
     'courseurl' => (new moodle_url('/course/view.php', ['id' => $courseid]))->out(false),
-    'message-success' => get_string('message-success', 'local_questionconverter'),
-    'importsuccess' => get_string('importsuccess', 'local_questionconverter'),
-    'questionsimported' => get_string('questionsimported', 'local_questionconverter'),
-    'categoriescreated' => get_string('categoriescreated', 'local_questionconverter'),
-    'redirecting' => get_string('redirecting', 'local_questionconverter'),
-    'seconds' => get_string('seconds', 'local_questionconverter'),
-    'gotoquestionbank' => get_string('gotoquestionbank', 'local_questionconverter'),
-    'backtocourse' => get_string('backtocourse', 'local_questionconverter'),
+    'year' => date('Y'),
 ];
 
 echo $OUTPUT->render_from_template('local_questionconverter/success', $templatedata);

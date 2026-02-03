@@ -38,8 +38,8 @@
 
     <div class="max-w-4xl mx-auto px-2 py-8">
         <div class="text-center">
-            <p class="text-gray-700 mt-2 text-3xl font-bold">{{importsuccess}}</p>
-            <p class="text-gray-600">{{message-success}}</p>
+            <p class="text-gray-700 mt-2 text-3xl font-bold">{{#str}}importsuccess, local_questionconverter{{/str}}</p>
+            <p class="text-gray-600">{{#str}}message-success, local_questionconverter{{/str}}</p>
         </div>
     </div>
 
@@ -53,7 +53,7 @@
               </div>
             </div>
             <p class="text-slate-500 text-sm font-medium">
-              {{questionsimported}}
+              {{#str}}questionsimported, local_questionconverter{{/str}}
             </p>
             <p class="text-3xl font-bold text-green-700 mt-1">
               {{total}}
@@ -69,7 +69,7 @@
               </div>
             </div>
             <p class="text-slate-500 text-sm font-medium">
-              {{categoriescreated}}
+              {{#str}}categoriescreated, local_questionconverter{{/str}}
             </p>
             <p class="text-3xl font-bold text-blue-900 mt-1">
               {{categories}}
@@ -80,7 +80,7 @@
     <div class="text-center mb-4">
         <div class="spinner-border text-primary mb-3" role="status">
         </div>
-            <p class="text-gray-600">{{redirecting}} <strong><span id="countdown"> 10 </span> </strong> {{seconds}} </p>
+            <p class="text-gray-600">{{#str}}redirecting, local_questionconverter{{/str}} <strong><span id="countdown"> 10 </span> </strong> {{#str}}seconds, local_questionconverter{{/str}} </p>
     </div>
     
     <div class="flex justify-center">
@@ -90,7 +90,7 @@
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8">
             <path stroke-linecap="round" stroke-linejoin="round" d="m20.25 7.5-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125Z" />
             </svg>
-            {{gotoquestionbank}}
+            {{#str}}gotoquestionbank, local_questionconverter{{/str}}
             </div>
         </a>
         </div>
@@ -101,14 +101,14 @@
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8">
             <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
             </svg>
-            {{backtocourse}}
+            {{#str}}backtocourse, local_questionconverter{{/str}}
             </div>
         </a>
         </div>
     </div>
     
     <div class="max-w-4xl mx-auto mt-12 h-16 text-center">
-        <p class="text-sm text-gray-700">{{footer}} - {{year}}</p>
+        <p class="text-sm text-gray-700 font-semibold">{{#str}}stringfooter, local_questionconverter{{/str}} - {{year}}</p>
     </div>
 </div>
 
