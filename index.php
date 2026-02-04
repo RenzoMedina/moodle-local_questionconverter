@@ -32,9 +32,9 @@ if (file_exists(__DIR__ . '/vendor/autoload.php')) {
 require_once(__DIR__ . '/classes/converter/pdf_parser.php');
 require_once(__DIR__ . '/classes/converter/question_importer.php');
 
+use local_questionconverter\form\upload_form;
 use local_questionconverter\converter\pdf_parser;
 use local_questionconverter\converter\question_importer;
-
 
 $courseid = optional_param('courseid', 0, PARAM_INT);
 if (empty($courseid)) {
@@ -61,6 +61,8 @@ $PAGE->set_heading(get_string('pluginname', 'local_questionconverter'));
 $PAGE->requires->css(new moodle_url('/local/questionconverter/tailwindcss/dist/output.css'));
 $PAGE->requires->js(new moodle_url('/local/questionconverter/js/uploader.js'));
 
+$form = new upload_form(null, ['courseid' => $courseid]);
+$form->set_data(['courseid' => $courseid]);
 // Process the form if it has been submitted.
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && confirm_sesskey()) {
     try {
@@ -217,6 +219,7 @@ $templatedata = [
     'courseid' => $courseid,
     'year' => date('Y'),
     'link_return' => (new moodle_url('/course/view.php', ['id' => $courseid]))->out(false),
+    'form_html' => $form->render(),
     ];
 echo $OUTPUT->render_from_template('local_questionconverter/main', $templatedata);
 echo $OUTPUT->footer();
