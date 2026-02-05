@@ -1,6 +1,7 @@
 # Dependency directories
 node_modules/
 amd/build/
+tailwindcss/dist/
 # Optional npm cache directory
 .npm
 
