@@ -18,6 +18,11 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.11.0
       
       - name: Obtener version
         id: version
@@ -29,23 +34,45 @@ jobs:
           fi
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
       
+      - name: Build Tailwind CSS
+        working-directory: tailwindcss
+        run: |
+          npm install
+          npm run build
+
+      - name: Build AMD (Moodle)
+        run: |
+          git clone -b MOODLE_405_STABLE --depth 1 https://github.com/moodle/moodle.git /tmp/moodle
+          rm -rf /tmp/moodle/local/questionconverter
+          mkdir -p /tmp/moodle/local
+          rsync -a --delete ./ /tmp/moodle/local/questionconverter/
+          cd /tmp/moodle
+          npm install
+          npx grunt amd --force
+          rsync -a --delete /tmp/moodle/local/questionconverter/amd/build/ ./amd/build/
+
       - name: Preparando archivo del plugin
         run: |
           echo "Limpiando los archivo inncesesarios..."
-          rm -rf .git .github .gitignore node_modules tests .vscode
-          find . -name ".DS_Store" -delete
-          echo "Archivos limpiados!"
-          ls -la
+          rm -rf /tmp/build
+          mkdir -p /tmp/build/questionconverter
+          rsync -a \
+            --exclude .git \
+            --exclude .github \
+            --exclude .gitignore \
+            --exclude node_modules \
+            --exclude tests \
+            --exclude .vscode \
+            --exclude ".DS_Store" \
+            ./ /tmp/build/questionconverter/
+          echo "Archivos preparados!"
+          ls -la /tmp/build/questionconverter
 
       - name: Create ZIP for Moodle
         run: |
           echo "Creando ZIP para: ${{ env.PLUGIN_NAME }}"
-          PLUGIN_DIR="questionconverter"
-          mkdir -p /tmp/build/${PLUGIN_DIR}
-          cp -r ./* /tmp/build/${PLUGIN_DIR}/ 2>/dev/null || true
-          ls -la /tmp/build/${PLUGIN_DIR}/
           cd /tmp/build
-          zip -r ${{ env.PLUGIN_NAME }}.zip ${PLUGIN_DIR}
+          zip -r ${{ env.PLUGIN_NAME }}.zip questionconverter
           mv ${{ env.PLUGIN_NAME }}.zip ${GITHUB_WORKSPACE}/
           cd ${GITHUB_WORKSPACE}
           echo "ZIP creado correctamente"
