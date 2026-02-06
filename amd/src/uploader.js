@@ -9,6 +9,9 @@ export const init = () => {
   const loader = document.getElementById("qc-loader");
   const progressBar = document.getElementById("qc-progress-bar");
   const moodleForm = document.querySelector(".qc-moodle-form-wrapper form");
+  const resetButton = moodleForm?.querySelector(
+    'input[type="reset"], button[type="reset"], input[name="resetbutton"], button[name="resetbutton"]'
+  );
   let progressTimer = null;
   let progressValue = 10;
   let progressDirection = 1;
@@ -46,6 +49,33 @@ export const init = () => {
       progressBar.style.width = "10%";
     }
   };
+  const clearFilepickerUi = () => {
+    if (!moodleForm) {
+      return;
+    }
+    const draftInput = moodleForm.querySelector('input[name="pdffile"]');
+    if (draftInput) {
+      draftInput.value = 0;
+    }
+    const filepicker = moodleForm.querySelector(".filepicker");
+    if (filepicker) {
+      const filename = filepicker.querySelector(
+        ".fp-filename, .fp-file, .filepicker-filename"
+      );
+      if (filename) {
+        filename.textContent = "";
+      }
+    }
+    const M = window.M || null;
+    if (M?.form?.filepicker?.instances) {
+      const instances = M.form.filepicker.instances;
+      const instance = instances.pdffile ||
+        Object.values(instances).find((i) => i?.elementname === "pdffile");
+      if (instance && typeof instance.clear === "function") {
+        instance.clear();
+      }
+    }
+  };
   if (loader && moodleForm) {
     moodleForm.addEventListener("submit", function () {
       if (
@@ -60,6 +90,18 @@ export const init = () => {
       loader.classList.remove("hidden");
       loader.classList.add("flex");
       startProgress();
+    });
+  }
+  if (resetButton && moodleForm) {
+    resetButton.addEventListener("click", function (event) {
+      event.preventDefault();
+      moodleForm.reset();
+      clearFilepickerUi();
+      if (loader) {
+        loader.classList.add("hidden");
+        loader.classList.remove("flex");
+      }
+      stopProgress();
     });
   }
 };

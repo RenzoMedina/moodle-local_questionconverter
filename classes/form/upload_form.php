@@ -61,13 +61,21 @@ class upload_form extends \moodleform {
      */
     public function validation($data, $files) {
         $errors = parent::validation($data, $files);
-        if (empty($files['pdffile']['name'])) {
+        $draftitemid = $data['pdffile'] ?? 0;
+        if (empty($draftitemid)) {
             $errors['pdffile'] = get_string('erroruploadfile', 'local_questionconverter');
-        } else {
-            $filetype = mimeinfo('type', $files['pdffile']['name']);
-            if ($filetype !== 'application/pdf') {
-                $errors['pdffile'] = get_string('invalidpdffile', 'local_questionconverter');
-            }
+            return $errors;
+        }
+        $usercontext = \context_user::instance($GLOBALS['USER']->id);
+        $fs = get_file_storage();
+        $files = $fs->get_area_files($usercontext->id, 'user', 'draft', $draftitemid, 'id', false);
+        if (empty($files)) {
+            $errors['pdffile'] = get_string('erroruploadfile', 'local_questionconverter');
+            return $errors;
+        }
+        $file = reset($files);
+        if ($file->get_mimetype() !== 'application/pdf') {
+            $errors['pdffile'] = get_string('invalidpdffile', 'local_questionconverter');
         }
         return $errors;
     }

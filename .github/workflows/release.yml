@@ -49,7 +49,8 @@ jobs:
           cd /tmp/moodle
           npm install
           npx grunt amd --force
-          rsync -a --delete /tmp/moodle/local/questionconverter/amd/build/ ./amd/build/
+          mkdir -p ${GITHUB_WORKSPACE}/amd/build
+          rsync -a --delete /tmp/moodle/local/questionconverter/amd/build/ ${GITHUB_WORKSPACE}/amd/build/
 
       - name: Preparando archivo del plugin
         run: |
@@ -65,6 +66,14 @@ jobs:
             --exclude .vscode \
             --exclude ".DS_Store" \
             ./ /tmp/build/questionconverter/
+          if [[ ! -d "/tmp/build/questionconverter/tailwindcss/dist" ]]; then
+            echo "ERROR: No se encontró tailwindcss/dist en el build" >&2
+            exit 1
+          fi
+          if [[ ! -d "/tmp/build/questionconverter/amd/build" ]]; then
+            echo "ERROR: No se encontró amd/build en el build" >&2
+            exit 1
+          fi
           echo "Archivos preparados!"
           ls -la /tmp/build/questionconverter
 

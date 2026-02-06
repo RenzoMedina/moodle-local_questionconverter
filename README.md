@@ -20,6 +20,8 @@ It is designed for teaching teams or managers who work with large volumes of que
 
 * Analyze the number of alternatives, such as 3 or 4. 
 
+* Compatibility for Spanish and English
+
 ## 🌐 Future scalability ##
 
 * Extract images and insert them into the questions
@@ -33,6 +35,16 @@ It is designed for teaching teams or managers who work with large volumes of que
 * Moodle "^4.x"
 * PHP "^8.x"
 * Node (npm to TailwindCSS)
+
+## PDF Template Examples
+
+### English
+- [Standard Format](https://templatespdfplugin.blob.core.windows.net/english/Template_question_normal.pdf) - Questions without evaluation indicators
+- [With Indicators](https://templatespdfplugin.blob.core.windows.net/english/Template_question_indicators.pdf) - Questions grouped by evaluation indicators
+
+### Spanish
+- [Formato Estándar](https://templatespdfplugin.blob.core.windows.net/spanish/Template_cuestionario_normal.pdf) - Preguntas sin indicadores de evaluación
+- [Con Indicadores](https://templatespdfplugin.blob.core.windows.net/spanish/Template_cuestionario_indicadores.pdf) - Preguntas agrupadas por indicadores de evaluación
 
 ## Installing via uploaded ZIP file ##
 

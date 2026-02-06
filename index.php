@@ -62,94 +62,33 @@ $PAGE->requires->css(new moodle_url('/local/questionconverter/tailwindcss/dist/o
 $PAGE->requires->js_call_amd('local_questionconverter/uploader', 'init');
 $form = new upload_form(null, ['courseid' => $courseid]);
 $form->set_data(['courseid' => $courseid]);
-// Process the form if it has been submitted.
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && confirm_sesskey()) {
+// Handle form submission.
+if ($form->is_cancelled()) {
+    redirect(new moodle_url('/course/view.php', ['id' => $courseid]));
+}
+if ($data = $form->get_data()) {
     try {
-        // Verify that a file has been uploaded (supports direct upload and filepicker draft).
-        $file = null;
-        $filepath = null;
-        $isdraft = false;
-        $filename = null;
-        if (isset($_FILES['pdffile']) && $_FILES['pdffile']['error'] === UPLOAD_ERR_OK) {
-            $file = $_FILES['pdffile'];
-            $filename = clean_filename($file['name']);
-        } else {
-            $errcode = $_FILES['pdffile']['error'] ?? null;
-            // Attempt to retrieve file from draft area (filepicker).
-            $draftid = file_get_submitted_draft_itemid('pdffile');
-            if (!empty($draftid)) {
-                $fs = get_file_storage();
-                $usercontext = context_user::instance($USER->id);
-                $files = $fs->get_area_files($usercontext->id, 'user', 'draft', $draftid, 'id', false);
-                if (!empty($files)) {
-                    // Take the first actual file (not a directory).
-                    foreach ($files as $f) {
-                        if ($f->is_directory()) {
-                            continue;
-                        }
-                        $tempdir = make_temp_directory('questionconverter');
-                        if ($filename === null) {
-                            $filename = clean_filename($f->get_filename());
-                        }
-                        $filepath = $tempdir . '/' . $filename;
-                        file_put_contents($filepath, $f->get_content());
-                        $file = [
-                            'tmp_name' => $filepath,
-                            'name' => $filename,
-                            'type' => $f->get_mimetype(),
-                            'size' => $f->get_filesize(),
-                            'error' => UPLOAD_ERR_OK,
-                        ];
-                        $isdraft = true;
-                        break;
-                    }
-                }
-            }
-            if (!$file) {
-                // If there is no file, throw the usual exception.
-                throw new moodle_exception('erroruploadfile', 'local_questionconverter');
-            }
+        // Process the uploaded file.
+        $draftitemid = $data->pdffile;
+        $fs = get_file_storage();
+        $usercontext = context_user::instance($USER->id);
+        $files = $fs->get_area_files($usercontext->id, 'user', 'draft', $draftitemid, 'id', false);
+        if (empty($files)) {
+            throw new moodle_exception('erroruploadfile', 'local_questionconverter');
         }
-
-        // If we get here, we have $file (or created from draft).
-        // Validate that it is a PDF.
-        $finfo = finfo_open(FILEINFO_MIME_TYPE);
-        $mimetype = finfo_file($finfo, $file['tmp_name']);
-        finfo_close($finfo);
-        if ($mimetype !== 'application/pdf') {
+        $file = reset($files);
+        // Check that the file is a PDF.
+        if ($file->get_mimetype() !== 'application/pdf') {
             throw new moodle_exception('invalidpdffile', 'local_questionconverter');
         }
-
-        // If it is not a draft, move the file to a temporary directory.
-        // (if we already created the file from a draft, it is already in temp).
-        if (!$isdraft) {
-            $tempdir = make_temp_directory('questionconverter');
-
-            $filepath = $tempdir . '/' . $filename;
-
-            // Verify that the temporary file exists and was uploaded via HTTP POST.
-            if (!is_uploaded_file($file['tmp_name']) || !file_exists($file['tmp_name'])) {
-                throw new moodle_exception('erroruploadfile', 'local_questionconverter');
-            }
-
-            // Attempt to move; if that fails, attempt to copy as a fallback.
-            if (!@move_uploaded_file($file['tmp_name'], $filepath)) {
-                // Fallback: copy.
-                if (!@copy($file['tmp_name'], $filepath)) {
-                    $err = error_get_last();
-                    throw new moodle_exception('erroruploadfile', 'local_questionconverter');
-                } else {
-                    /* Delete the original temporary file if copying was successful */
-                    @unlink($file['tmp_name']);
-                }
-            }
-        }
-        /* Get if it has indicators */
-        $withindicators = optional_param('with_indicators', 0, PARAM_INT);
-        /* Parsear the PDF */
+        $tempdir = make_temp_directory('questionconverter');
+        $filepath = $tempdir . '/' . clean_filename($file->get_filename());
+        $file->copy_content_to($filepath);
+        $filename = $file->get_filename();
+        $withindicators = !empty($data->with_indicators);
         $parser = new pdf_parser();
         if ($withindicators) {
-            /* Format with indicators */
+            // Format with indicators.
             $result = $parser->parse_with_indicators($filepath);
             if (empty($result['indicators'])) {
                 throw new moodle_exception('noindicatorsfound', 'local_questionconverter');
@@ -160,7 +99,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && confirm_sesskey()) {
             foreach ($result['indicators'] as $indicator) {
                 $namefile = clean_param($filename, PARAM_TEXT);
                 $namefile = preg_replace('/\.pdf$/i', '', $namefile);
-                $categoryname = $namefile . '_Indicador_' . $indicator['number'];
+                $categoryname = $namefile . '_'. get_string('pdf_pattern_indicator', 'local_questionconverter'). '_' . $indicator['number'];
                 $imported = $importer->import_questions(
                     $indicator['questions'],
                     $categoryname,
@@ -213,8 +152,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && confirm_sesskey()) {
 }
 echo $OUTPUT->header();
 $templatedata = [
-    'form_action' => (new moodle_url('/local/questionconverter/index.php'))->out(false),
-    'sesskey' => sesskey(),
     'courseid' => $courseid,
     'year' => date('Y'),
     'link_return' => (new moodle_url('/course/view.php', ['id' => $courseid]))->out(false),

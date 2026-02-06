@@ -91,32 +91,21 @@ class pdf_parser {
       */
     public function parse_with_indicators($filepath) {
         if (!file_exists($filepath) || filesize($filepath) === 0) {
-            return ['success' => false,
-                'indicators' => [],
-                ];
+            throw new \moodle_exception('invalidpdffile', 'local_questionconverter');
         }
         try {
             $pdf = $this->parser->parseFile($filepath);
             $text = $pdf->getText();
         } catch (\Throwable $e) {
-            return [
-                'success' => false,
-                'indicators' => [],
-                ];
+            throw new \moodle_exception('errorparsingpdf', 'local_questionconverter', '', null, $e->getMessage());
         }
         if (empty(trim($text))) {
-            return [
-                'success' => false,
-                'indicators' => [],
-                ];
+            throw new \moodle_exception('noquestionsfound', 'local_questionconverter');
         }
         /* Extract indicators */
         $indicators = $this->extract_indicators($text);
         if (empty($indicators)) {
-            return [
-                'success' => false,
-                'indicators' => [],
-                ];
+            throw new \moodle_exception('noindicatorsfound', 'local_questionconverter');
         }
         $result = [];
         foreach ($indicators as $num => $indicator) {
