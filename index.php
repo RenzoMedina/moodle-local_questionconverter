@@ -99,7 +99,8 @@ if ($data = $form->get_data()) {
             foreach ($result['indicators'] as $indicator) {
                 $namefile = clean_param($filename, PARAM_TEXT);
                 $namefile = preg_replace('/\.pdf$/i', '', $namefile);
-                $categoryname = $namefile . '_'. get_string('pdf_pattern_indicator', 'local_questionconverter'). '_' . $indicator['number'];
+                $categoryname = $namefile . '_'. get_string('pdf_pattern_indicator', 'local_questionconverter').
+                '_' . $indicator['number'];
                 $imported = $importer->import_questions(
                     $indicator['questions'],
                     $categoryname,

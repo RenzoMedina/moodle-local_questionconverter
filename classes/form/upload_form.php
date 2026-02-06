@@ -61,12 +61,13 @@ class upload_form extends \moodleform {
      */
     public function validation($data, $files) {
         $errors = parent::validation($data, $files);
+        global $USER;
         $draftitemid = $data['pdffile'] ?? 0;
         if (empty($draftitemid)) {
             $errors['pdffile'] = get_string('erroruploadfile', 'local_questionconverter');
             return $errors;
         }
-        $usercontext = \context_user::instance($GLOBALS['USER']->id);
+        $usercontext = \context_user::instance($USER->id);
         $fs = get_file_storage();
         $files = $fs->get_area_files($usercontext->id, 'user', 'draft', $draftitemid, 'id', false);
         if (empty($files)) {
