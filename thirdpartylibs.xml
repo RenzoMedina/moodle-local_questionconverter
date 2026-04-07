@@ -24,4 +24,11 @@
     <license>MIT</license>
     <licenseversion></licenseversion>
   </library>
+  <!-- Exclude temporary libraries to avoid conflicts -->
+  <library>
+    <location>vendor/</location>
+    <name>Composer vendor libraries</name>
+    <version>1-0</version>
+    <license>MIT</license>
+  </library>
 </libraries>
