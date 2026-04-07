@@ -138,7 +138,7 @@ class pdf_parser {
         $text = $this->clean_full_text($text);
         $qnum = preg_quote($this->patterns['question_number'], '/');
         $feedback = preg_quote($this->patterns['feedback'], '/');
-        $pattern = '/'. $qnum . '\s*(\d+)\s*(.*?)\s*' . $feedback . ':\s*(.*?)(?=' . $qnum . '|$)/s';
+        $pattern = '/' . $qnum . '\s*(\d+)\s*(.*?)\s*' . $feedback . ':\s*(.*?)(?=' . $qnum . '|$)/s';
         preg_match_all($pattern, $text, $matches, PREG_SET_ORDER);
         $questions = [];
         foreach ($matches as $m) {
@@ -157,7 +157,7 @@ class pdf_parser {
      */
     private function extract_indicators($text) {
         $indicatorpattern = preg_quote($this->patterns['indicator'], '/');
-        $pattern = '/'. $indicatorpattern . '\s+(\d+)\s*[:\s]*(.*?)(?=\n|$)/is';
+        $pattern = '/' . $indicatorpattern . '\s+(\d+)\s*[:\s]*(.*?)(?=\n|$)/is';
         preg_match_all($pattern, $text, $matches, PREG_OFFSET_CAPTURE);
         $indicatorcount = isset($matches[0]) ? count($matches[0]) : 0;
         if ($indicatorcount > 0) {
@@ -238,7 +238,7 @@ class pdf_parser {
     private function process_question_from_block($block) {
         $qnmun = preg_quote($this->patterns['question_number'], '/');
         $feedback = preg_quote($this->patterns['feedback'], '/');
-        $pattern = '/'. $qnmun . '\s*(\d+)\s*(.*?)\s*' . $feedback . ':\s*(.*?)(?=' . $qnmun . '\s*\d+|\z)/s';
+        $pattern = '/' . $qnmun . '\s*(\d+)\s*(.*?)\s*' . $feedback . ':\s*(.*?)(?=' . $qnmun . '\s*\d+|\z)/s';
         if (!preg_match($pattern, $block, $m)) {
             return null;
         }
@@ -280,7 +280,7 @@ class pdf_parser {
         $alternativespattern = preg_quote($this->patterns['alternatives'], '/');
         $evalindicatorpattern = preg_quote($this->patterns['evaluation_indicator'], '/');
         $correctanswerpattern = preg_quote($this->patterns['correct_answer'], '/');
-        $pattern = '/'. $alternativespattern . '\s*(.*?)(?=' . $evalindicatorpattern . '|' . $correctanswerpattern . ')/s';
+        $pattern = '/' . $alternativespattern . '\s*(.*?)(?=' . $evalindicatorpattern . '|' . $correctanswerpattern . ')/s';
         if (!preg_match($pattern, $content, $m)) {
             return [$options, $type];
         }
@@ -350,7 +350,7 @@ class pdf_parser {
         $correctanswerpattern = preg_quote($this->patterns['correct_answer'], '/');
         $true = preg_quote($this->patterns['true'], '/');
         $false = preg_quote($this->patterns['false'], '/');
-        $pattern = '/'. $correctanswerpattern . '\s*([a-e]|' . $true . '|' . $false . '|verdadero|falso|true|false)/si';
+        $pattern = '/' . $correctanswerpattern . '\s*([a-e]|' . $true . '|' . $false . '|verdadero|falso|true|false)/si';
         if (preg_match($pattern, $content, $match)) {
             return strtolower(trim($match[1]));
         }
@@ -418,7 +418,7 @@ class pdf_parser {
         if ($matches === null) {
             $qmun = preg_quote($this->patterns['question_number'], '/');
             $feedback = preg_quote($this->patterns['feedback'], '/');
-            $pattern = '/'. $qmun . '\s*(\d+)\s*(.*?)\s*' . $feedback . ':\s*(.*?)(?=' . $qmun . '\s*\d+|\z)/s';
+            $pattern = '/' . $qmun . '\s*(\d+)\s*(.*?)\s*' . $feedback . ':\s*(.*?)(?=' . $qmun . '\s*\d+|\z)/s';
             if (!preg_match($pattern, $content, $matches)) {
                 return null;
             }
