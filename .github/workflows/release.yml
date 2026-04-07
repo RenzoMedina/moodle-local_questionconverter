@@ -63,7 +63,6 @@ jobs:
             --exclude .gitignore \
             --exclude node_modules \
             --exclude moodle-plugin-ci.yml \
-            --exclude thirdpartylibs.xml \
             --exclude tests \
             --exclude .vscode \
             --exclude ".DS_Store" \
