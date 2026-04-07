@@ -306,7 +306,7 @@ class pdf_parser {
     private function extract_options_essay($content) {
         $type = '';
         $essaypattern = preg_quote($this->patterns['essay'], '/');
-        $pattern = '/'. $essaypattern . '/s';
+        $pattern = '/' . $essaypattern . '/s';
         if (preg_match($pattern, $content)) {
             $type = 'essay';
         }
