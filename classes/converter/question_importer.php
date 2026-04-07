@@ -50,7 +50,6 @@ class question_importer {
      * @return array Import information
      */
     public function import_questions($questions, $categoryname, $courseid) {
-        global $DB;
         // Create or search for the category.
         $category = $this->get_or_create_category($categoryname, $courseid);
         $importedcount = 0;

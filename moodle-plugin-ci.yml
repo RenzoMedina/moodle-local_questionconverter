@@ -1,4 +1,4 @@
 filter:
   notPaths:
-  - vendor/**
-  - tailwindcss/**
+  - vendor/*
+  - tailwindcss/*
